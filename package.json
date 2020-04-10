@@ -9,10 +9,11 @@
   "main": "./server/app.js",
   "scripts": {
     "buildLoginBundle": "babel ./client/login ./client/helper --presets @babel/preset-react --out-file ./hosted/loginBundle.js",
-    "buildAppBundle": "babel ./client/app ./client/helper --presets @babel/preset-react --out-file ./hosted/bundle.js",
+    "buildAppBundle": "babel client/main ./client/helper --presets @babel/preset-react --out-file ./hosted/bundle.js",
     "build": "npm run buildLoginBundle && npm run buildAppBundle",
     "watchLoginBundle": "babel --watch ./client/login ./client/helper --presets @babel/preset-react --out-file ./hosted/loginBundle.js --verbose",
-    "watchAppBundle": "babel --watch ./client/app ./client/helper --presets @babel/preset-react --out-file ./hosted/bundle.js --verbose",
+    "watchMainBundle": "babel --watch client/main ./client/helper --presets @babel/preset-react --out-file ./hosted/mainBundle.js --verbose",
+    "watchProfileBundle": "babel --watch ./client/profile ./client/helper --presets @babel/preset-react --out-file ./hosted/profileBundle.js --verbose",
     "nodemon": "nodemon --inspect -e js,html,css --watch ./server ./server/app.js",
     "start": "node ./server/app.js",
     "pretest": "eslint ./server --fix",
@@ -38,6 +39,7 @@
     "handlebars": "^4.5.3",
     "helmet": "^3.21.3",
     "mongoose": "^5.9.3",
+    "react-datepicker": "^2.14.1",
     "redis": "^3.0.2",
     "serve-favicon": "^2.5.0",
     "underscore": "^1.9.2"

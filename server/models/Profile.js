@@ -2,19 +2,37 @@ const crypto = require('crypto');
 const mongoose = require('mongoose');
 
 mongoose.Promise = global.Promise;
+const convertId = mongoose.Types.ObjectId;
 
-let AccountModel = {};
+let ProfileModel = {};
 const iterations = 10000;
 const saltLength = 64;
 const keyLength = 64;
 
-const AccountSchema = new mongoose.Schema({
+const ProfileSchema = new mongoose.Schema({
+  firstname: {
+    type: String,
+    required: true,
+    trim: true,
+    unique: false,
+  },
+  lastname: {
+    type: String,
+    require: true,
+    trim: true,
+    unique: false
+  },
   username: {
     type: String,
     required: true,
     trim: true,
     unique: true,
     match: /^[A-Za-z0-9_\-.]{1,16}$/,
+  },
+  subscribed: {
+    type: Boolean,
+    required: true,
+    default: false,
   },
   salt: {
     type: Buffer,
@@ -30,7 +48,7 @@ const AccountSchema = new mongoose.Schema({
   },
 });
 
-AccountSchema.statics.toAPI = (doc) => ({
+ProfileSchema.statics.toAPI = (doc) => ({
   // _id is built into your mongo document and is guaranteed to be unique
   username: doc.username,
   _id: doc._id,
@@ -47,22 +65,30 @@ const validatePassword = (doc, password, callback) => {
   });
 };
 
-AccountSchema.statics.findByUsername = (name, callback) => {
+ProfileSchema.statics.findByUsername = (name, callback) => {
   const search = {
     username: name,
   };
 
-  return AccountModel.findOne(search, callback);
+  return ProfileModel.findOne(search, callback);
 };
 
-AccountSchema.statics.generateHash = (password, callback) => {
+ProfileSchema.statics.findByOwner = (ownerId, callback) => {
+  const search = {
+    _id: convertId(ownerId),
+  };
+
+  return ProfileModel.find(search).select('firstname lastname username subscribed').exec(callback);
+};
+
+ProfileSchema.statics.generateHash = (password, callback) => {
   const salt = crypto.randomBytes(saltLength);
 
   crypto.pbkdf2(password, salt, iterations, keyLength, 'RSA-SHA512', (err, hash) => callback(salt, hash.toString('hex')));
 };
 
-AccountSchema.statics.authenticate = (username, password, callback) => {
-  AccountModel.findByUsername(username, (err, doc) => {
+ProfileSchema.statics.authenticate = (username, password, callback) => {
+  ProfileModel.findByUsername(username, (err, doc) => {
     if (err) {
       return callback(err);
     }
@@ -81,7 +107,7 @@ AccountSchema.statics.authenticate = (username, password, callback) => {
   });
 };
 
-AccountModel = mongoose.model('Account', AccountSchema);
+ProfileModel = mongoose.model('Profile', ProfileSchema);
 
-module.exports.AccountModel = AccountModel;
-module.exports.AccountSchema = AccountSchema;
+module.exports.ProfileModel = ProfileModel;
+module.exports.ProfileSchema = ProfileSchema;

@@ -1,13 +1,13 @@
 const requiresLogin = (req, res, next) => {
-  if (!req.session.account) {
+  if (!req.session.profile) {
     return res.redirect('/');
   }
   return next();
 };
 
 const requiresLogout = (req, res, next) => {
-  if (req.session.account) {
-    return res.redirect('/maker');
+  if (req.session.profile) {
+    return res.redirect('/main');
   }
   return next();
 };

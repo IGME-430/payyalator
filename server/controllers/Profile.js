@@ -1,6 +1,6 @@
 const models = require('../models');
 
-const { Account } = models;
+const { Profile } = models;
 
 const loginPage = (req, res) => {
   res.render('login', { csrfToken: req.csrfToken() });
@@ -23,14 +23,14 @@ const login = (request, response) => {
     return res.status(400).json({ error: 'RAWR! All fields are required' });
   }
 
-  return Account.AccountModel.authenticate(username, password, (err, account) => {
-    if (err || !account) {
+  return Profile.ProfileModel.authenticate(username, password, (err, profile) => {
+    if (err || !profile) {
       return res.status(401).json({ error: 'Wrong username or password' });
     }
 
-    req.session.account = Account.AccountModel.toAPI(account);
+    req.session.profile = Profile.ProfileModel.toAPI(profile);
 
-    return res.json({ redirect: '/maker' });
+    return res.json({ redirect: '/main' });
   });
 };
 
@@ -39,6 +39,8 @@ const signup = (request, response) => {
   const res = response;
 
   // cast to string to cover up security flaws
+  req.firstname = `${req.body.firstname}`;
+  req.lastname = `${req.body.lastname}`;
   req.body.username = `${req.body.username}`;
   req.body.pass = `${req.body.pass}`;
   req.body.pass2 = `${req.body.pass2}`;
@@ -51,20 +53,22 @@ const signup = (request, response) => {
     return res.status(400).json({ error: 'RAWR! Passwords do not match' });
   }
 
-  return Account.AccountModel.generateHash(req.body.pass, (salt, hash) => {
-    const accountData = {
+  return Profile.ProfileModel.generateHash(req.body.pass, (salt, hash) => {
+    const profileData = {
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
       username: req.body.username,
       salt,
       password: hash,
     };
 
-    const newAccount = new Account.AccountModel(accountData);
+    const newProfile = new Profile.ProfileModel(profileData);
 
-    const savePromise = newAccount.save();
+    const savePromise = newProfile.save();
 
     savePromise.then(() => {
-      req.session.account = Account.AccountModel.toAPI(newAccount);
-      res.json({ redirect: '/maker' });
+      req.session.profile = Profile.ProfileModel.toAPI(newProfile);
+      res.json({ redirect: '/main' });
     });
 
     savePromise.catch((err) => {
@@ -79,6 +83,34 @@ const signup = (request, response) => {
   });
 };
 
+const profilePage = (req, res) => {
+  Profile.ProfileModel.findByOwner(req.session.profile._id, (err, docs) => {
+    if (err) {
+      console.log(err);
+
+      return res.status(400).json({error: 'An error occurred'});
+    }
+
+    return res.render('profile', { csrfToken: req.csrfToken(), profile: docs});
+  });
+};
+
+const getProfile = (request, response) => {
+  const req = request;
+  const res = response;
+
+  return Profile.ProfileModel.findByOwner(req.session.profile._id, (err, docs) => {
+    if (err) {
+      console.log(err);
+      return res.status(400).json({error: 'An error occurred' });
+    }
+
+    console.log(docs);
+
+    return res.json({ profile: docs });
+  });
+};
+
 const getToken = (request, response) => {
   const req = request;
   const res = response;
@@ -90,8 +122,11 @@ const getToken = (request, response) => {
   res.json(csrfJSON);
 };
 
+module.exports.profilePage = profilePage;
+module.exports.getProfile = getProfile;
 module.exports.loginPage = loginPage;
 module.exports.login = login;
 module.exports.logout = logout;
 module.exports.signup = signup;
 module.exports.getToken = getToken;
+
