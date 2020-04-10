@@ -25,14 +25,17 @@ const handleEntry = (e) => {
 const removeEntry = (e) => {
     e.preventDefault();
 
-    let entry = e.target.querySelectorAll("h3")[0].innerText.split(":")[1].replace(' ','');
-
-    let removalData = `name=${entry}&`;
-    removalData += $(`[id=${e.target.id}]`).serialize();
+    let children = e.target.parentElement.children;
+    let removalData = `year=${children[0].innerText}&`;
+    removalData +=`month=${children[1].innerText}&`;
+    removalData +=`category=${children[2].innerText}&`;
+    removalData +=`item=${children[3].innerText}&`;
+    removalData +=`amount=${parseFloat(children[4].innerText)}&`;
+    removalData +=`_csrf=${children[5].value}`;
 
     sendAjax(
         'POST',
-        $(`[id=${e.target.id}]`).attr("action"),
+        '/removeEntry',
         removalData,
         function () {
             getToken();
@@ -102,40 +105,74 @@ const EntryList = function (props) {
         );
     }
 
-    const entryNodes = props.entries.map(function (entry) {
+    // Build the table entries
+    const entryNodes = props.entries.map((entry, index) => {
+        const { year, month, category, item, amount } = entry
         return (
-            <form id={entry.year + entry.month + entry.category + entry.item}
-                  key={entry.id}
-                  onSubmit={removeEntry}
-                  name="budgetEntry"
-                  action="/remover"
-                  method="POST"
-                  className="budgetEntry"
-            >
-                <h3 className="entryYear">Year: {entry.year}</h3>
-                <h3 className="entryMonth">Month: {entry.month}</h3>
-                <h3 className="entryCategory">Category: {entry.category}</h3>
-                <h3 className="entryItem">Item: {entry.item}</h3>
-                <h3 className="entryAmount">Amount: {entry.amount}</h3>
-                <input type="hidden" name="_csrf" value={props.csrf}/>
-                <input className="removeEntrySubmit" type="submit" value="Remove Entry"/>
-            </form>
+            <tr key={index}>
+                <td>{year}</td>
+                <td>{month}</td>
+                <td>{category}</td>
+                <td>{item}</td>
+                <td>{amount}</td>
+                <input type='hidden' name='_csrf' value={props.csrf}/>
+                <input id='trashButton' className='removeEntrySubmit' type='image' src='/assets/img/trash.png' alt="Submit" />
+            </tr>
         );
     });
 
+    // Build the header
+    let header = (Object.keys(props.entries[0])).slice(1, 6);
+    const tableHeader = header.map((key, index) => {
+        return (
+            <th key={index}>{key.toUpperCase()}</th>
+        )
+    });
+
+    // Total expenses
+    let totalExpenses = 0;
+    for (let idx in props.entries) {
+        totalExpenses += props.entries[idx].amount;
+    }
+
+    // Return the combined table
     return (
-        <div className="entryList">
-            {entryNodes}
+        <div>
+            <h1 id='title'>Budget Breakdown</h1>
+            <div id='entries'>
+                <tbody id='tableBody'>
+                <tr>{tableHeader}</tr>
+                {entryNodes}
+                <tr id='totalRow'>
+                    <td></td><td></td><td></td><td>Total</td><td>{totalExpenses}</td>
+                </tr>
+                </tbody>
+            </div>
         </div>
     );
+}
+
+const attachButton = () => {
+    const trashButtons = document.querySelectorAll("#trashButton");
+
+    for (let button of trashButtons) {
+        button.addEventListener("click", (e) => {
+            e.preventDefault();
+            removeEntry(e);
+            return false;
+        });
+    }
 };
 
 const loadEntriesFromServer = (csrf) => {
     sendAjax('GET', '/getEntries', null, (data) => {
         let entries = data.entries;
 
-        ReactDOM.render(
-            <EntryList csrf={csrf} entries={entries}/>, document.querySelector("#entries")
+         ReactDOM.render(
+            <EntryList csrf={csrf} entries={entries}/>, document.querySelector("#entries"),
+             () => {
+                attachButton();
+             }
         );
     });
 };
