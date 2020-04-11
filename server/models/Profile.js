@@ -111,7 +111,6 @@ ProfileSchema.statics.updateSubscription = (doc, callback) => {
   const filterId = { _id: convertId(doc.owner) };
   const update = { subscribed: (doc.subscription === 'true') };
 
-  // ProfileModel.updateOne(query, updateObject, {new: true});
   ProfileModel.findOneAndUpdate(
     filterId,
     update,
