@@ -3,7 +3,7 @@ const handleEntry = (e) => {
 
     // $("#domoMessage").animate({width: 'hide'}, 350);
 
-    if ($("#entryDate").val() === '' || $("#entryCategory").val() === '' || $("#entryItem").val() === '' || $("#entryAmount").val() === 0.00 ) {
+    if ($("#entryDate").val() === '' || $("#entryCategory").val() === '' || $("#entryItem").val() === '' || $("#entryAmount").val() === 0.00) {
         handleError("RAWR! All fields are required");
         return false;
     }
@@ -27,11 +27,13 @@ const removeEntry = (e) => {
 
     let children = e.target.parentElement.children;
     let removalData = `year=${children[0].innerText}&`;
-    removalData +=`month=${children[1].innerText}&`;
-    removalData +=`category=${children[2].innerText}&`;
-    removalData +=`item=${children[3].innerText}&`;
-    removalData +=`amount=${parseFloat(children[4].innerText)}&`;
-    removalData +=`_csrf=${children[5].value}`;
+    removalData += `month=${children[1].innerText}&`;
+    removalData += `category=${children[2].innerText}&`;
+    removalData += `item=${children[3].innerText}&`;
+    children[3].innerText = '';
+    removalData += `amount=${parseFloat(children[4].innerText)}&`;
+    children[4].innerText = 0.00;
+    removalData += `_csrf=${children[5].value}`;
 
     sendAjax(
         'POST',
@@ -88,8 +90,10 @@ const EntryForm = (props) => {
             </select>
             <label htmlFor="item">Item: </label>
             <input id="entryItem" type="text" name="item" placeholder="Entry Item"/>
-            <label htmlFor="amount">Amount: </label>
-            <input id="entryAmount" type="number" name="amount" placeholder="0.00"/>
+            <div class="amountClass">
+                <label htmlFor="amount">Amount: </label>
+                <input id="entryAmount" type="number" name="amount" placeholder="0.00"/>
+            </div>
             <input type="hidden" name="_csrf" value={props.csrf}/>
             <input className="entrySubmit" type="submit" value="Submit Entry"/>
         </form>
@@ -107,7 +111,7 @@ const EntryList = function (props) {
 
     // Build the table entries
     const entryNodes = props.entries.map((entry, index) => {
-        const { year, month, category, item, amount } = entry
+        const {year, month, category, item, amount} = entry
         return (
             <tr key={index}>
                 <td>{year}</td>
@@ -116,7 +120,8 @@ const EntryList = function (props) {
                 <td>{item}</td>
                 <td>{amount}</td>
                 <input type='hidden' name='_csrf' value={props.csrf}/>
-                <input id='trashButton' className='removeEntrySubmit' type='image' src='/assets/img/trash.png' alt="Submit" />
+                <input id='trashButton' className='removeEntrySubmit' type='image' src='/assets/img/trash.png'
+                       alt="Submit"/>
             </tr>
         );
     });
@@ -144,7 +149,69 @@ const EntryList = function (props) {
                 <tr>{tableHeader}</tr>
                 {entryNodes}
                 <tr id='totalRow'>
-                    <td></td><td></td><td></td><td>Total</td><td>{totalExpenses}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Total</td>
+                    <td>{totalExpenses}</td>
+                </tr>
+                </tbody>
+            </div>
+        </div>
+    );
+}
+
+const SummaryList = function (props) {
+    if (props.entries.length === 0) {
+        return (
+            <div className="summaryList">
+                <h3 className="emptyEntry">No Entries yet</h3>
+            </div>
+        );
+    }
+
+    let sumList = {}
+
+    for (let obj of props.entries) {
+        if (!(obj['category'] in sumList)) {
+            sumList[obj['category']] = 0
+            sumList[obj['category']] += obj['amount']
+        } else {
+            sumList[obj['category']] += obj['amount']
+        }
+    }
+
+    // Build the table entries
+    const entryNodes = Object.keys(sumList).map((entry, index) => {
+        return (
+            <tr key={index}>
+                <td>{entry}</td>
+                <td>{sumList[entry]}</td>
+                <input type='hidden' name='_csrf' value={props.csrf}/>
+            </tr>
+        );
+    });
+
+    // Total expenses
+    let totalExpenses = 0;
+    for (let idx in props.entries) {
+        totalExpenses += props.entries[idx].amount;
+    }
+
+    // Return the combined table
+    return (
+        <div>
+            <h1 id='title'>Budget Summary</h1>
+            <div id='entries'>
+                <tbody id='tableBody'>
+                <tr>
+                    <th>CATEGORY</th>
+                    <th>AMOUNT</th>
+                </tr>
+                {entryNodes}
+                <tr id='totalRow'>
+                    <td>Total</td>
+                    <td>{totalExpenses}</td>
                 </tr>
                 </tbody>
             </div>
@@ -168,22 +235,30 @@ const loadEntriesFromServer = (csrf) => {
     sendAjax('GET', '/getEntries', null, (data) => {
         let entries = data.entries;
 
-         ReactDOM.render(
+        ReactDOM.render(
             <EntryList csrf={csrf} entries={entries}/>, document.querySelector("#entries"),
-             () => {
+            () => {
                 attachButton();
-             }
+            }
+        );
+
+        ReactDOM.render(
+            <SummaryList entries={entries}/>, document.querySelector("#summary")
         );
     });
 };
 
 const setup = function (csrf) {
     ReactDOM.render(
-        <EntryForm csrf={csrf} />, document.querySelector("#addEntry")
+        <EntryForm csrf={csrf}/>, document.querySelector("#addEntry")
     );
 
     ReactDOM.render(
-        <EntryList entries={[]} />, document.querySelector("#entries")
+        <EntryList entries={[]}/>, document.querySelector("#entries")
+    );
+
+    ReactDOM.render(
+        <SummaryList entries={[]}/>, document.querySelector("#summary")
     );
 
     loadEntriesFromServer(csrf);

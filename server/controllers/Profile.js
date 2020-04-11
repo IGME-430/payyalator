@@ -88,10 +88,10 @@ const profilePage = (req, res) => {
     if (err) {
       console.log(err);
 
-      return res.status(400).json({error: 'An error occurred'});
+      return res.status(400).json({ error: 'An error occurred' });
     }
 
-    return res.render('profile', { csrfToken: req.csrfToken(), profile: docs});
+    return res.render('profile', { csrfToken: req.csrfToken(), profile: docs });
   });
 };
 
@@ -102,10 +102,27 @@ const getProfile = (request, response) => {
   return Profile.ProfileModel.findByOwner(req.session.profile._id, (err, docs) => {
     if (err) {
       console.log(err);
-      return res.status(400).json({error: 'An error occurred' });
+      return res.status(400).json({ error: 'An error occurred' });
     }
 
-    console.log(docs);
+    return res.json({ profile: docs });
+  });
+};
+
+const updateSubscription = (request, response) => {
+  const req = request;
+  const res = response;
+
+  const updateData = {
+    owner: req.session.profile._id,
+    subscription: req.body.subscribed,
+  };
+
+  return Profile.ProfileModel.updateSubscription(updateData, (err, docs) => {
+    if (err) {
+      console.log(err);
+      return res.status(400).json({ error: 'An error occurred' });
+    }
 
     return res.json({ profile: docs });
   });
@@ -128,5 +145,5 @@ module.exports.loginPage = loginPage;
 module.exports.login = login;
 module.exports.logout = logout;
 module.exports.signup = signup;
+module.exports.updateSubscription = updateSubscription;
 module.exports.getToken = getToken;
-

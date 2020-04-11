@@ -70,6 +70,7 @@ EntrySchema.statics.removeEntry = (doc, callback) => {
     month: doc.month,
     category: doc.category,
     item: doc.item,
+    amount: doc.amount,
   };
 
   EntryModel.find(query).remove().exec();

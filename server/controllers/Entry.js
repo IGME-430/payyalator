@@ -24,8 +24,6 @@ const getEntries = (request, response) => {
       return res.status(400).json({ error: 'An error occurred' });
     }
 
-    console.log(docs);
-
     return res.json({ entries: docs });
   });
 };
@@ -36,10 +34,11 @@ const removeEntry = (request, response) => {
 
   const entryData = {
     owner: req.session.profile._id,
-    year: req.year,
-    month: req.month,
-    category: req.category,
-    item: req.item,
+    year: req.body.year,
+    month: req.body.month,
+    category: req.body.category,
+    item: req.body.item,
+    amount: req.body.amount,
   };
 
   return Entry.EntryModel.removeEntry(entryData, (err, docs) => {
@@ -48,17 +47,16 @@ const removeEntry = (request, response) => {
       return res.status(400).json({ error: 'An error occurred' });
     }
 
-    // return res.status(204);
     return res.json({ entries: docs });
   });
 };
 
 const makeEntry = (req, res) => {
-  if (!req.body.year ||
-      !req.body.month ||
-      !req.body.category ||
-      !req.body.item ||
-      !req.body.amount) {
+  if (!req.body.year
+      || !req.body.month
+      || !req.body.category
+      || !req.body.item
+      || !req.body.amount) {
     return res.status(400).json({ error: 'All fields are required' });
   }
 

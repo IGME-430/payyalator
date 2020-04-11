@@ -22,6 +22,24 @@ const updateProfile = (e) => {
     return false;
 };
 
+const updateSubscription = (e) => {
+    e.preventDefault();
+
+    let subscriptionData = `subscribed=${e.target.checked}&`;
+    subscriptionData += `_csrf=${e.target.parentElement.children['_csrf'].value}`;
+
+    sendAjax(
+        'POST',
+        '/updateSubscription',
+        subscriptionData,
+        function () {
+            getToken();
+        }
+    );
+
+    return false;
+}
+
 const ProfileForm = function (props) {
     if (props.profile.length === 0) {
         return <div className="editProfile">
@@ -38,11 +56,10 @@ const ProfileForm = function (props) {
 
             >
                 <h3 className="username" disabled="true">Username: {profile.username}</h3>
-                <h3 className="firstname">Firstname: {profile.firstname}</h3>
-                <h3 className="lastname">Lastname: {profile.lastname}</h3>
+                <h4 className="firstname">Firstname: {profile.firstname}</h4>
+                <h4 className="lastname">Lastname: {profile.lastname}</h4>
                 <label htmlFor="subscribed">Subscribed</label>
                 <input type="checkbox" id="subscribed" />
-                {/*<h3 className="subscribed">Subscribed: {profile.subscribed}</h3>*/}
                 <input type="hidden" name="_csrf" value={props.csrf}/>
             </form>
         );
@@ -55,12 +72,25 @@ const ProfileForm = function (props) {
     );
 };
 
+const attachSubscriptionCheck = () => {
+    const subCheck = document.querySelector("#subscribed");
+
+    subCheck.addEventListener("click", (e) => {
+        e.preventDefault();
+        updateSubscription(e);
+        return false;
+    });
+};
+
 const loadProfileFromServer = (csrf) => {
     sendAjax('GET', '/getProfile', null, (data) => {
         let profile = data.profile;
 
         ReactDOM.render(
-            <ProfileForm csrf={csrf} profile={profile}/>, document.querySelector("#editProfile")
+            <ProfileForm csrf={csrf} profile={profile}/>, document.querySelector("#editProfile"),
+            () => {
+                attachSubscriptionCheck();
+            }
         );
 
         document.querySelector("#subscribed").checked = profile[0].subscribed;

@@ -20,7 +20,7 @@ const ProfileSchema = new mongoose.Schema({
     type: String,
     require: true,
     trim: true,
-    unique: false
+    unique: false,
   },
   username: {
     type: String,
@@ -105,6 +105,19 @@ ProfileSchema.statics.authenticate = (username, password, callback) => {
       return callback();
     });
   });
+};
+
+ProfileSchema.statics.updateSubscription = (doc, callback) => {
+  const filterId = { _id: convertId(doc.owner) };
+  const update = { subscribed: (doc.subscription === 'true') };
+
+  // ProfileModel.updateOne(query, updateObject, {new: true});
+  ProfileModel.findOneAndUpdate(
+    filterId,
+    update,
+    { useFindAndModify: false },
+    () => ProfileModel.findByOwner(doc.owner, callback),
+  );
 };
 
 ProfileModel = mongoose.model('Profile', ProfileSchema);
