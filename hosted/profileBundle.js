@@ -1,15 +1,15 @@
 "use strict";
 
 var updateProfile = function updateProfile(e) {
-  e.preventDefault(); // $("#domoMessage").animate({width: 'hide'}, 350);
+  e.preventDefault(); // $("#errorMessage").animate({width: 'hide'}, 350);
 
   if ($("#entryDate").val() === '' || $("#entryCategory").val() === '' || $("#entryItem").val() === '' || $("#entryAmount").val() === 0.00) {
-    handleError("RAWR! All fields are required");
+    handleError("All fields are required");
     return false;
   }
 
   if ($("#entryCategory").val().indexOf(' ') > 0 || $("#entryItem").val().indexOf(' ') > 0) {
-    handleError("RAWR! No spaces allowed in names.");
+    handleError("No spaces allowed in names.");
     return false;
   }
 
@@ -110,13 +110,13 @@ $(document).ready(function () {
 
 var handleError = function handleError(message) {
   $("#errorMessage").text(message);
-  $("#domoMessage").animate({
+  $("#errorMessage").animate({
     width: 'toggle'
   }, 350);
 };
 
 var redirect = function redirect(response) {
-  $("#domoMessage").animate({
+  $("#errorMessage").animate({
     width: 'hide'
   }, 350);
   window.location = response.redirect;

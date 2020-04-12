@@ -1,17 +1,17 @@
 const handleEntry = (e) => {
     e.preventDefault();
 
-    // $("#domoMessage").animate({width: 'hide'}, 350);
+    $("#errorMessage").animate({width: 'hide'}, 350);
 
     if ($("#entryDate").val() === '' || $("#entryCategory").val() === '' || $("#entryItem").val() === '' || $("#entryAmount").val() === 0.00) {
-        handleError("RAWR! All fields are required");
+        handleError("All fields are required");
         return false;
     }
 
     if (
         $("#entryCategory").val().indexOf(' ') > 0 ||
         $("#entryItem").val().indexOf(' ') > 0) {
-        handleError("RAWR! No spaces allowed in names.");
+        handleError("No spaces allowed in names.");
         return false;
     }
 
