@@ -3,7 +3,7 @@ const models = require('../models');
 const { Entry } = models;
 
 const budgetPage = (req, res) => {
-  Entry.EntryModel.findByOwner(req.session.profile._id, (err, docs) => {
+  Entry.EntryModel.findByOwner(req.session.profile._id, (err) => {
     if (err) {
       console.log(err);
 
