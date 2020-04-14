@@ -1,27 +1,31 @@
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <title>Payyalator</title>
+    <meta charset="utf-8"/>
+    <title>Payyalator</title>
     <script crossorigin src="https://unpkg.com/react@16/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/prop-types/prop-types.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/remarkable/1.6.2/remarkable.min.js"></script>
-  <link rel="shortcut icon" href="/assets/img/favicon.png"/>
-  <link rel="stylesheet" type="text/css" href="/assets/style.css"/>
+    <link rel="shortcut icon" href="/assets/img/favicon.png"/>
+    <link rel="stylesheet" type="text/css" href="/assets/style.css"/>
 </head>
 <body>
-  <nav><a href="/login"><img id="logo" src="/assets/img/scale.png" alt="face logo"/></a>
-      <div class="navlink" id="second"><a id="profileButton" href="/profile">Profile</a></div>
-      <div class="navlink" id="first"><a href="/logout">Log out</a></div>
-  </nav>
-  <section id="addEntry">
-  </section>
-  <section id="entries">
-  </section>
-  <section id="summary">
-  </section>
-  <script src="/assets/mainBundle.js"></script>
+<div id="baseContainer">
+    <nav><a href="/login"><img id="logo" src="/assets/img/scale.png" alt="scale logo"/></a>
+        <div class="navlink" id="first"><a id="profileButton" href="/profile">Profile</a></div>
+        <div class="navlink" id="second"><a href="/logout">Log out</a></div>
+    </nav>
+    <section id="addEntryContainer">
+    </section>
+    <div id="content">
+        <section id="breakdownContainer">
+        </section>
+        <section id="summaryContainer">
+        </section>
+    </div>
+</div>
+<script src="/assets/mainBundle.js"></script>
 </body>
 </html>

@@ -8,17 +8,19 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 var handleEntry = function handleEntry(e) {
   e.preventDefault();
-  $("#errorMessage").animate({
-    width: 'hide'
-  }, 350);
 
-  if ($("#entryDate").val() === '' || $("#entryCategory").val() === '' || $("#entryItem").val() === '' || $("#entryAmount").val() === 0.00) {
-    handleError("All fields are required");
+  if ($("#entryYear").val() === '' || $("#entryMonth").val() === '' || $("#entryCategory").val() === '' || $("#entryItem").val() === '' || $("#entryAmount").val() === 0.00) {
+    handleEntryError("All fields are required");
     return false;
   }
 
   if ($("#entryCategory").val().indexOf(' ') > 0 || $("#entryItem").val().indexOf(' ') > 0) {
-    handleError("No spaces allowed in names.");
+    handleEntryError("No spaces allowed in names.");
+    return false;
+  }
+
+  if (parseInt($("#nrOfEntries").val()) >= 10 && $("#subscribed").val() === "false") {
+    handleEntryError("You have reached your entry limit.  Subscribe in" + " the profile page to add more than 10 entries");
     return false;
   }
 
@@ -54,8 +56,10 @@ var EntryForm = function EntryForm(props) {
     method: "POST",
     className: "entryForm"
   }, /*#__PURE__*/React.createElement("label", {
+    "class": "entryFormElement",
     htmlFor: "year"
   }, "Year: "), /*#__PURE__*/React.createElement("select", {
+    "class": "entryFormElement",
     id: "entryYear",
     name: "year"
   }, /*#__PURE__*/React.createElement("option", {
@@ -71,8 +75,10 @@ var EntryForm = function EntryForm(props) {
   }, "2024"), /*#__PURE__*/React.createElement("option", {
     value: "2025"
   }, "2025")), /*#__PURE__*/React.createElement("label", {
+    "class": "entryFormElement",
     htmlFor: "month"
   }, "Month: "), /*#__PURE__*/React.createElement("select", {
+    "class": "entryFormElement",
     id: "entryMonth",
     name: "month"
   }, /*#__PURE__*/React.createElement("option", {
@@ -100,8 +106,10 @@ var EntryForm = function EntryForm(props) {
   }, "November"), /*#__PURE__*/React.createElement("option", {
     value: "dec"
   }, "December")), /*#__PURE__*/React.createElement("label", {
+    "class": "entryFormElement",
     htmlFor: "category"
   }, "Category: "), /*#__PURE__*/React.createElement("select", {
+    "class": "entryFormElement",
     id: "entryCategory",
     name: "category"
   }, /*#__PURE__*/React.createElement("option", {
@@ -115,8 +123,10 @@ var EntryForm = function EntryForm(props) {
   }, "Entertainment"), /*#__PURE__*/React.createElement("option", {
     value: "other"
   }, "Other")), /*#__PURE__*/React.createElement("label", {
+    "class": "entryFormElement",
     htmlFor: "item"
   }, "Item: "), /*#__PURE__*/React.createElement("input", {
+    "class": "entryFormElement",
     id: "entryItem",
     type: "text",
     name: "item",
@@ -124,8 +134,10 @@ var EntryForm = function EntryForm(props) {
   }), /*#__PURE__*/React.createElement("div", {
     "class": "amountClass"
   }, /*#__PURE__*/React.createElement("label", {
+    "class": "entryFormElement",
     htmlFor: "amount"
   }, "Amount: "), /*#__PURE__*/React.createElement("input", {
+    "class": "entryFormElement",
     id: "entryAmount",
     type: "number",
     name: "amount",
@@ -135,10 +147,24 @@ var EntryForm = function EntryForm(props) {
     name: "_csrf",
     value: props.csrf
   }), /*#__PURE__*/React.createElement("input", {
-    className: "entrySubmit",
+    id: "nrOfEntries",
+    type: "hidden",
+    name: "nrOfEntries",
+    value: ""
+  }), /*#__PURE__*/React.createElement("input", {
+    id: "subscribed",
+    type: "hidden",
+    name: "subscribed",
+    value: ""
+  }), /*#__PURE__*/React.createElement("input", {
+    className: "entrySubmit entryFormElement",
     type: "submit",
     value: "Submit Entry"
-  }));
+  }), /*#__PURE__*/React.createElement("p", {
+    id: "entryErrorParagraph"
+  }, /*#__PURE__*/React.createElement("span", {
+    id: "entryError"
+  })));
 };
 
 var EntryList = function EntryList(props) {
@@ -148,8 +174,9 @@ var EntryList = function EntryList(props) {
     }, /*#__PURE__*/React.createElement("h3", {
       className: "emptyEntry"
     }, "No Entries yet"));
-  } // Build the table entries
+  }
 
+  document.querySelector("#nrOfEntries").value = props.entries.length; // Build the table entries
 
   var entryNodes = props.entries.map(function (entry, index) {
     var year = entry.year,
@@ -186,7 +213,9 @@ var EntryList = function EntryList(props) {
   } // Return the combined table
 
 
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+  return /*#__PURE__*/React.createElement("div", {
+    "class": "scrollbarStyles"
+  }, /*#__PURE__*/React.createElement("h1", {
     id: "title"
   }, "Budget Breakdown"), /*#__PURE__*/React.createElement("div", {
     id: "entries"
@@ -246,7 +275,9 @@ var SummaryList = function SummaryList(props) {
   } // Return the combined table
 
 
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+  return /*#__PURE__*/React.createElement("div", {
+    "class": "scrollbarStyles"
+  }, /*#__PURE__*/React.createElement("h1", {
     id: "title"
   }, "Budget Summary"), /*#__PURE__*/React.createElement("div", {
     id: "entries"
@@ -285,25 +316,28 @@ var loadEntriesFromServer = function loadEntriesFromServer(csrf) {
     ReactDOM.render( /*#__PURE__*/React.createElement(EntryList, {
       csrf: csrf,
       entries: entries
-    }), document.querySelector("#entries"), function () {
+    }), document.querySelector("#breakdownContainer"), function () {
       attachButton();
     });
     ReactDOM.render( /*#__PURE__*/React.createElement(SummaryList, {
       entries: entries
-    }), document.querySelector("#summary"));
+    }), document.querySelector("#summaryContainer"));
+  });
+  sendAjax('GET', '/isSubscribed', null, function (result) {
+    document.querySelector("#subscribed").value = result.subscribed[0].subscribed;
   });
 };
 
 var setup = function setup(csrf) {
   ReactDOM.render( /*#__PURE__*/React.createElement(EntryForm, {
     csrf: csrf
-  }), document.querySelector("#addEntry"));
+  }), document.querySelector("#addEntryContainer"));
   ReactDOM.render( /*#__PURE__*/React.createElement(EntryList, {
     entries: []
-  }), document.querySelector("#entries"));
+  }), document.querySelector("#breakdownContainer"));
   ReactDOM.render( /*#__PURE__*/React.createElement(SummaryList, {
     entries: []
-  }), document.querySelector("#summary"));
+  }), document.querySelector("#summaryContainer"));
   loadEntriesFromServer(csrf);
 };
 
@@ -318,11 +352,18 @@ $(document).ready(function () {
 });
 "use strict";
 
-var handleError = function handleError(message) {
-  $("#errorMessage").text(message);
-  $("#errorMessage").animate({
-    width: 'toggle'
-  }, 350);
+var handleLoginError = function handleLoginError(message) {
+  $("#loginError").attr("style", "display: inline;");
+  $("#loginError").attr("aria-invalid", "true");
+  $("#loginError").html("&nbsp; <b>ERROR</b> - " + message);
+  $("#user").attr("aria-invalid", "true");
+};
+
+var handleEntryError = function handleEntryError(message) {
+  $("#entryError").attr("style", "display: inline;");
+  $("#entryError").attr("aria-invalid", "true");
+  $("#entryError").html("&nbsp; <b>ERROR</b> - " + message);
+  $("#user").attr("aria-invalid", "true");
 };
 
 var redirect = function redirect(response) {
@@ -342,7 +383,14 @@ var sendAjax = function sendAjax(type, action, data, success) {
     success: success,
     error: function error(xhr, status, _error) {
       var messageObj = JSON.parse(xhr.responseText);
-      handleError(messageObj.error);
+
+      switch (_error) {
+        case "Unauthorized":
+          handleLoginError(messageObj.error);
+
+        default:
+          console.log(messageObj.error);
+      }
     }
   });
 };

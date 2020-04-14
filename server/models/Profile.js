@@ -51,6 +51,7 @@ const ProfileSchema = new mongoose.Schema({
 ProfileSchema.statics.toAPI = (doc) => ({
   // _id is built into your mongo document and is guaranteed to be unique
   username: doc.username,
+  subscribed: doc.subscribed,
   _id: doc._id,
 });
 
@@ -79,6 +80,14 @@ ProfileSchema.statics.findByOwner = (ownerId, callback) => {
   };
 
   return ProfileModel.find(search).select('firstname lastname username subscribed').exec(callback);
+};
+
+ProfileSchema.statics.isSubscribed = (ownerId, callback) => {
+  const search = {
+    _id: convertId(ownerId),
+  };
+
+  return ProfileModel.find(search).select('subscribed').exec(callback);
 };
 
 ProfileSchema.statics.generateHash = (password, callback) => {

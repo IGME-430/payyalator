@@ -6,8 +6,14 @@ var handleLogin = function handleLogin(e) {
     width: 'hide'
   }, 350);
 
-  if ($("#user").val() === '' || $("#pass").val() === '') {
-    handleError("Username or password is empty");
+  if ($("#user").val() === '' && $("#pass").val() === '') {
+    handleLoginError("Username and password is empty");
+    return false;
+  } else if ($("#user").val() === '') {
+    handleLoginError("Username is empty");
+    return false;
+  } else if ($("#pass").val() === '') {
+    handleLoginError("Password is empty");
     return false;
   }
 
@@ -45,15 +51,19 @@ var LoginWindow = function LoginWindow(props) {
     method: "POST",
     className: "mainForm"
   }, /*#__PURE__*/React.createElement("label", {
+    "class": "userLabelLogin",
     htmlFor: "username"
-  }, "Username: "), /*#__PURE__*/React.createElement("input", {
+  }, "Username:"), /*#__PURE__*/React.createElement("input", {
+    "class": "userInputLogin",
     id: "user",
     type: "text",
     name: "username",
     placeholder: "username"
   }), /*#__PURE__*/React.createElement("label", {
+    "class": "passLabelLogin",
     htmlFor: "pass"
   }, "Password: "), /*#__PURE__*/React.createElement("input", {
+    "class": "passInputLogin",
     id: "pass",
     type: "password",
     name: "pass",
@@ -63,10 +73,14 @@ var LoginWindow = function LoginWindow(props) {
     name: "_csrf",
     value: props.csrf
   }), /*#__PURE__*/React.createElement("input", {
-    className: "formSubmit",
+    className: "formSubmit signIn",
     type: "submit",
     value: "Sign in"
-  }));
+  }), /*#__PURE__*/React.createElement("p", {
+    id: "loginErrorParagraph"
+  }, /*#__PURE__*/React.createElement("span", {
+    id: "loginError"
+  })));
 };
 
 var SignupWindow = function SignupWindow(props) {
@@ -78,36 +92,46 @@ var SignupWindow = function SignupWindow(props) {
     method: "POST",
     className: "mainForm"
   }, /*#__PURE__*/React.createElement("label", {
+    "class": "firstnameLabelReg",
     htmlFor: "firstname"
   }, "Firstname: "), /*#__PURE__*/React.createElement("input", {
+    "class": "firstnameInputReg",
     id: "firstn",
     type: "text",
     name: "firstname",
     placeholder: "firstname"
   }), /*#__PURE__*/React.createElement("label", {
+    "class": "lastnameLabelReg",
     htmlFor: "lastname"
   }, "Lastname: "), /*#__PURE__*/React.createElement("input", {
+    "class": "lastnameInputReg",
     id: "lastn",
     type: "text",
     name: "lastname",
     placeholder: "lastname"
   }), /*#__PURE__*/React.createElement("label", {
+    "class": "usernameLabelReg",
     htmlFor: "username"
   }, "Username: "), /*#__PURE__*/React.createElement("input", {
+    "class": "usernameInputReg",
     id: "user",
     type: "text",
     name: "username",
     placeholder: "username"
   }), /*#__PURE__*/React.createElement("label", {
+    "class": "password1LabelReg",
     htmlFor: "pass"
   }, "Password: "), /*#__PURE__*/React.createElement("input", {
+    "class": "password1InputReg",
     id: "pass",
     type: "password",
     name: "pass",
     placeholder: "password"
   }), /*#__PURE__*/React.createElement("label", {
+    "class": "password2LabelReg",
     htmlFor: "pass2"
   }, "Password: "), /*#__PURE__*/React.createElement("input", {
+    "class": "password2InputReg",
     id: "pass2",
     type: "password",
     name: "pass2",
@@ -117,7 +141,7 @@ var SignupWindow = function SignupWindow(props) {
     name: "_csrf",
     value: props.csrf
   }), /*#__PURE__*/React.createElement("input", {
-    className: "formSubmit",
+    className: "formSubmit signUp",
     type: "submit",
     value: "Sign Up"
   }));
@@ -162,11 +186,18 @@ $(document).ready(function () {
 });
 "use strict";
 
-var handleError = function handleError(message) {
-  $("#errorMessage").text(message);
-  $("#errorMessage").animate({
-    width: 'toggle'
-  }, 350);
+var handleLoginError = function handleLoginError(message) {
+  $("#loginError").attr("style", "display: inline;");
+  $("#loginError").attr("aria-invalid", "true");
+  $("#loginError").html("&nbsp; <b>ERROR</b> - " + message);
+  $("#user").attr("aria-invalid", "true");
+};
+
+var handleEntryError = function handleEntryError(message) {
+  $("#entryError").attr("style", "display: inline;");
+  $("#entryError").attr("aria-invalid", "true");
+  $("#entryError").html("&nbsp; <b>ERROR</b> - " + message);
+  $("#user").attr("aria-invalid", "true");
 };
 
 var redirect = function redirect(response) {
@@ -186,7 +217,14 @@ var sendAjax = function sendAjax(type, action, data, success) {
     success: success,
     error: function error(xhr, status, _error) {
       var messageObj = JSON.parse(xhr.responseText);
-      handleError(messageObj.error);
+
+      switch (_error) {
+        case "Unauthorized":
+          handleLoginError(messageObj.error);
+
+        default:
+          console.log(messageObj.error);
+      }
     }
   });
 };
