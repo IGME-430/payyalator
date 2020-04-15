@@ -1,15 +1,15 @@
 "use strict";
 
 var updateProfile = function updateProfile(e) {
-  e.preventDefault(); // $("#errorMessage").animate({width: 'hide'}, 350);
+  e.preventDefault();
 
   if ($("#entryDate").val() === '' || $("#entryCategory").val() === '' || $("#entryItem").val() === '' || $("#entryAmount").val() === 0.00) {
-    handleError("All fields are required");
+    handleMessage("passwordError", "All fields are required");
     return false;
   }
 
   if ($("#entryCategory").val().indexOf(' ') > 0 || $("#entryItem").val().indexOf(' ') > 0) {
-    handleError("No spaces allowed in names.");
+    handleMessage("passwordError", "No spaces allowed in names.");
     return false;
   }
 
@@ -17,6 +17,49 @@ var updateProfile = function updateProfile(e) {
     getToken();
   });
   return false;
+};
+
+var changePassword = function changePassword(e) {
+  e.preventDefault();
+
+  if ($(".oldPasswordInput").val() === '') {
+    handleMessage("passwordError", "You did not provide your old password");
+    return false;
+  } else if ($(".newPasswordInput").val() === '') {
+    handleMessage("passwordError", "You did not provide a new password");
+    return false;
+  } else if ($(".confirmPasswordInput").val() === '') {
+    handleMessage("passwordError", "Please confirm your password");
+    return false;
+  }
+
+  if ($(".newPasswordInput").val() !== $(".confirmPasswordInput").val()) {
+    handleMessage("passwordError", "Your new passwords do not match");
+    return false;
+  }
+
+  var passwordData = "password=".concat($(".oldPasswordInput").val(), "&");
+  passwordData += "_csrf=".concat($("#_csrf").val());
+  sendAjax('POST', '/isValidPwd', passwordData, function (password) {
+    if (!password.isValid) {
+      handleMessage("passwordError", "Your Old Password does not match the password on file, please try again");
+      return false;
+    }
+
+    sendAjax('GET', '/getToken', null, function (result) {
+      var updateData = "newPassword=".concat($(".newPasswordInput").val(), "&");
+      updateData += "_csrf=".concat(result.csrfToken);
+      sendAjax('POST', '/updatePwd', updateData, function () {
+        handleMessage("passwordUpdated", "Password updated successfully");
+        $(".oldPasswordInput").val(null);
+        $(".newPasswordInput").val(null);
+        $(".confirmPasswordInput").val(null);
+        jQuery.ready(function () {
+          getToken();
+        });
+      });
+    });
+  });
 };
 
 var updateSubscription = function updateSubscription(e) {
@@ -32,9 +75,9 @@ var updateSubscription = function updateSubscription(e) {
 var ProfileForm = function ProfileForm(props) {
   if (props.profile.length === 0) {
     return /*#__PURE__*/React.createElement("div", {
-      className: "editProfile"
+      "class": "editProfile"
     }, /*#__PURE__*/React.createElement("h3", {
-      className: "emptyProfile"
+      "class": "emptyProfile"
     }, "No Profile Information"));
   }
 
@@ -45,26 +88,66 @@ var ProfileForm = function ProfileForm(props) {
       action: "/updateProfile",
       mothod: "POST"
     }, /*#__PURE__*/React.createElement("h3", {
-      className: "username",
+      "class": "username",
       disabled: "true"
     }, "Username: ", profile.username), /*#__PURE__*/React.createElement("h4", {
-      className: "firstname"
+      "class": "firstname"
     }, "Firstname: ", profile.firstname), /*#__PURE__*/React.createElement("h4", {
-      className: "lastname"
+      "class": "lastname"
     }, "Lastname: ", profile.lastname), /*#__PURE__*/React.createElement("label", {
       htmlFor: "subscribed"
     }, "Subscribed"), /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
       id: "subscribed"
     }), /*#__PURE__*/React.createElement("input", {
+      id: "_csrf",
       type: "hidden",
       name: "_csrf",
       value: props.csrf
     }));
   });
   return /*#__PURE__*/React.createElement("div", {
-    className: "editProfile"
+    "class": "editProfile"
   }, profile);
+};
+
+var PasswordForm = function PasswordForm(props) {
+  return /*#__PURE__*/React.createElement("form", {
+    id: "changePassword",
+    onSubmit: changePassword,
+    action: "/changePassword",
+    mothod: "POST"
+  }, /*#__PURE__*/React.createElement("label", {
+    "class": "passwordFormElement oldPasswordLabel"
+  }, "Old Password: "), /*#__PURE__*/React.createElement("input", {
+    "class": "passwordFormElement oldPasswordInput",
+    type: "password",
+    name: "oldPassword",
+    placeholder: "Old Password"
+  }), /*#__PURE__*/React.createElement("label", {
+    "class": "passwordFormElement newPasswordLabel"
+  }, "New Password: "), /*#__PURE__*/React.createElement("input", {
+    "class": "passwordFormElement newPasswordInput",
+    type: "password",
+    name: "newPassword",
+    placeholder: "New Password"
+  }), /*#__PURE__*/React.createElement("label", {
+    "class": "passwordFormElement confirmPasswordLabel"
+  }, "Confirm Password: "), /*#__PURE__*/React.createElement("input", {
+    "class": "passwordFormElement confirmPasswordInput",
+    type: "password",
+    name: "confirmPassword",
+    placeholder: "Confirm Password"
+  }), /*#__PURE__*/React.createElement("input", {
+    "class": "passwordFormElement changePassword",
+    type: "submit",
+    value: "Change Password"
+  }), /*#__PURE__*/React.createElement("p", {
+    "class": "errorParagraph",
+    id: "passwordErrorParagraph"
+  }, /*#__PURE__*/React.createElement("span", {
+    id: "passwordError"
+  })));
 };
 
 var attachSubscriptionCheck = function attachSubscriptionCheck() {
@@ -82,7 +165,7 @@ var loadProfileFromServer = function loadProfileFromServer(csrf) {
     ReactDOM.render( /*#__PURE__*/React.createElement(ProfileForm, {
       csrf: csrf,
       profile: profile
-    }), document.querySelector("#editProfile"), function () {
+    }), document.querySelector("#profileSection"), function () {
       attachSubscriptionCheck();
     });
     document.querySelector("#subscribed").checked = profile[0].subscribed;
@@ -93,7 +176,10 @@ var setup = function setup(csrf) {
   ReactDOM.render( /*#__PURE__*/React.createElement(ProfileForm, {
     csrf: csrf,
     profile: []
-  }), document.querySelector("#editProfile"));
+  }), document.querySelector("#profileSection"));
+  ReactDOM.render( /*#__PURE__*/React.createElement(PasswordForm, {
+    csrf: csrf
+  }), document.querySelector("#passwordSection"));
   loadProfileFromServer(csrf);
 };
 
@@ -108,17 +194,57 @@ $(document).ready(function () {
 });
 "use strict";
 
-var handleLoginError = function handleLoginError(message) {
-  $("#loginError").attr("style", "display: inline;");
-  $("#loginError").attr("aria-invalid", "true");
-  $("#loginError").html("&nbsp; <b>ERROR</b> - " + message);
-  $("#user").attr("aria-invalid", "true");
+var updateAttributes = function updateAttributes(component, message, messageType) {
+  if (messageType === "error") {
+    component.attr("style", "display: inline;");
+    component.attr("aria-invalid", "true");
+    component.css("background", "#FFECEC url('/assets/img/cross_small.png') no-repeat 15px 50%");
+    component.css("background-size", "15px");
+    component.css("border", "2px solid #F5ACA6");
+    component.html("&nbsp; <b>ERROR</b> - " + message);
+  } else if (messageType === "informative") {
+    component.attr("style", "display: inline;");
+    component.attr("aria-invalid", "true");
+    component.css("background", "#9FF4A1 url('/assets/img/checkmark_small.png') no-repeat 10px 50%");
+    component.css("background-size", "15px");
+    component.css("border", "2px solid #108E00");
+    component.html("&nbsp; <b>SUCCESS</b> - " + message);
+  }
 };
 
-var handleEntryError = function handleEntryError(message) {
-  $("#entryError").attr("style", "display: inline;");
-  $("#entryError").attr("aria-invalid", "true");
-  $("#entryError").html("&nbsp; <b>ERROR</b> - " + message);
+var handleMessage = function handleMessage(messageType, message) {
+  var component;
+
+  switch (messageType) {
+    case "loginError":
+      component = $("#loginError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "signupError":
+      component = $("#signupError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "entryError":
+      component = $("#entryError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "passwordError":
+      component = $("#passwordError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "passwordUpdated":
+      component = $("#passwordError");
+      updateAttributes(component, message, "informative");
+      break;
+
+    default:
+      console.log("An unknown error occurred");
+  }
+
   $("#user").attr("aria-invalid", "true");
 };
 
@@ -142,7 +268,7 @@ var sendAjax = function sendAjax(type, action, data, success) {
 
       switch (_error) {
         case "Unauthorized":
-          handleLoginError(messageObj.error);
+          handleMessage("loginError", messageObj.error);
 
         default:
           console.log(messageObj.error);

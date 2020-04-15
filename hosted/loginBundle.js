@@ -2,18 +2,15 @@
 
 var handleLogin = function handleLogin(e) {
   e.preventDefault();
-  $("#errorMessage").animate({
-    width: 'hide'
-  }, 350);
 
   if ($("#user").val() === '' && $("#pass").val() === '') {
-    handleLoginError("Username and password is empty");
+    handleMessage("loginError", "Username and password is empty");
     return false;
   } else if ($("#user").val() === '') {
-    handleLoginError("Username is empty");
+    handleMessage("loginError", "Username is empty");
     return false;
   } else if ($("#pass").val() === '') {
-    handleLoginError("Password is empty");
+    handleMessage("loginError", "Password is empty");
     return false;
   }
 
@@ -24,17 +21,14 @@ var handleLogin = function handleLogin(e) {
 
 var handleSignup = function handleSignup(e) {
   e.preventDefault();
-  $("#errorMessage").animate({
-    width: 'hide'
-  }, 350);
 
   if ($("#user").val() === '' || $("#pass").val() === '' || $("#pass2").val() === '') {
-    handleError("All fields are required");
+    handleMessage("signupError", "All fields are required");
     return false;
   }
 
   if ($("#pass").val() !== $("#pass2").val()) {
-    handleError("Passwords do not match");
+    handleMessage("signupError", "Passwords do not match");
     return false;
   }
 
@@ -77,6 +71,7 @@ var LoginWindow = function LoginWindow(props) {
     type: "submit",
     value: "Sign in"
   }), /*#__PURE__*/React.createElement("p", {
+    "class": "errorParagraph",
     id: "loginErrorParagraph"
   }, /*#__PURE__*/React.createElement("span", {
     id: "loginError"
@@ -144,7 +139,12 @@ var SignupWindow = function SignupWindow(props) {
     className: "formSubmit signUp",
     type: "submit",
     value: "Sign Up"
-  }));
+  }), /*#__PURE__*/React.createElement("p", {
+    "class": "errorParagraph",
+    id: "signupErrorParagraph"
+  }, /*#__PURE__*/React.createElement("span", {
+    id: "signupError"
+  })));
 };
 
 var createLoginWindow = function createLoginWindow(csrf) {
@@ -186,17 +186,57 @@ $(document).ready(function () {
 });
 "use strict";
 
-var handleLoginError = function handleLoginError(message) {
-  $("#loginError").attr("style", "display: inline;");
-  $("#loginError").attr("aria-invalid", "true");
-  $("#loginError").html("&nbsp; <b>ERROR</b> - " + message);
-  $("#user").attr("aria-invalid", "true");
+var updateAttributes = function updateAttributes(component, message, messageType) {
+  if (messageType === "error") {
+    component.attr("style", "display: inline;");
+    component.attr("aria-invalid", "true");
+    component.css("background", "#FFECEC url('/assets/img/cross_small.png') no-repeat 15px 50%");
+    component.css("background-size", "15px");
+    component.css("border", "2px solid #F5ACA6");
+    component.html("&nbsp; <b>ERROR</b> - " + message);
+  } else if (messageType === "informative") {
+    component.attr("style", "display: inline;");
+    component.attr("aria-invalid", "true");
+    component.css("background", "#9FF4A1 url('/assets/img/checkmark_small.png') no-repeat 10px 50%");
+    component.css("background-size", "15px");
+    component.css("border", "2px solid #108E00");
+    component.html("&nbsp; <b>SUCCESS</b> - " + message);
+  }
 };
 
-var handleEntryError = function handleEntryError(message) {
-  $("#entryError").attr("style", "display: inline;");
-  $("#entryError").attr("aria-invalid", "true");
-  $("#entryError").html("&nbsp; <b>ERROR</b> - " + message);
+var handleMessage = function handleMessage(messageType, message) {
+  var component;
+
+  switch (messageType) {
+    case "loginError":
+      component = $("#loginError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "signupError":
+      component = $("#signupError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "entryError":
+      component = $("#entryError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "passwordError":
+      component = $("#passwordError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "passwordUpdated":
+      component = $("#passwordError");
+      updateAttributes(component, message, "informative");
+      break;
+
+    default:
+      console.log("An unknown error occurred");
+  }
+
   $("#user").attr("aria-invalid", "true");
 };
 
@@ -220,7 +260,7 @@ var sendAjax = function sendAjax(type, action, data, success) {
 
       switch (_error) {
         case "Unauthorized":
-          handleLoginError(messageObj.error);
+          handleMessage("loginError", messageObj.error);
 
         default:
           console.log(messageObj.error);

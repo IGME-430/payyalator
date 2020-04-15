@@ -9,44 +9,49 @@ const iterations = 10000;
 const saltLength = 64;
 const keyLength = 64;
 
-const ProfileSchema = new mongoose.Schema({
-  firstname: {
-    type: String,
-    required: true,
-    trim: true,
-    unique: false,
+const ProfileSchema = new mongoose.Schema(
+  {
+    firstname: {
+      type: String,
+      required: true,
+      trim: true,
+      unique: false,
+    },
+    lastname: {
+      type: String,
+      require: true,
+      trim: true,
+      unique: false,
+    },
+    username: {
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
+      match: /^[A-Za-z0-9_\-.]{1,16}$/,
+    },
+    subscribed: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    salt: {
+      type: Buffer,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    createdDate: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  lastname: {
-    type: String,
-    require: true,
-    trim: true,
-    unique: false,
+  {
+    collection: 'profiles',
   },
-  username: {
-    type: String,
-    required: true,
-    trim: true,
-    unique: true,
-    match: /^[A-Za-z0-9_\-.]{1,16}$/,
-  },
-  subscribed: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  salt: {
-    type: Buffer,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  createdDate: {
-    type: Date,
-    default: Date.now,
-  },
-});
+);
 
 ProfileSchema.statics.toAPI = (doc) => ({
   // _id is built into your mongo document and is guaranteed to be unique
@@ -125,6 +130,23 @@ ProfileSchema.statics.updateSubscription = (doc, callback) => {
     update,
     { useFindAndModify: false },
     () => ProfileModel.findByOwner(doc.owner, callback),
+  );
+};
+
+ProfileSchema.statics.updatePassword = (doc, callback) => {
+  const filterId = { _id: convertId(doc._id) };
+  const update = {
+    $set: {
+      password: doc.password,
+      salt: doc.salt,
+    },
+  };
+
+  ProfileModel.findOneAndUpdate(
+    filterId,
+    update,
+    { useFindAndModify: false },
+    () => ProfileModel.findByOwner(doc._id, callback),
   );
 };
 

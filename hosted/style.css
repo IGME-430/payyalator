@@ -14,6 +14,7 @@ html, body {
     padding: 0;
     overflow-x: hidden;
     background-color: #465C69;
+    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
 }
 
 #baseContainer {
@@ -36,6 +37,15 @@ nav {
     border-radius:10px;
 }
 
+#pageTitle {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    font-size: 3em;
+    color: #CDDDDD;
+}
+
 #addEntryContainer {
     position: relative;
     width: 80%;
@@ -43,19 +53,21 @@ nav {
     left: 50%;
     transform: translate(-50%, 0%);
     margin-top: 30px;
+    margin-bottom: 30px;
 }
 
 #content {
     position: absolute;
     height: inherit;
     width: 99%;
+    top: 32%;
     left: 50%;
     transform: translate(-50%, 0%);
 }
 
 #breakdownContainer {
     width: 99%;
-    height: 45%;
+    height: 40%;
     -ms-overflow-style: none;
     overflow-y: auto;
     overflow-x: hidden;
@@ -63,7 +75,7 @@ nav {
 
 #summaryContainer {
     width: 99%;
-    height: 45%;
+    height: 40%;
     -ms-overflow-style: none;
     overflow-y: auto;
     overflow-x: hidden;
@@ -150,9 +162,9 @@ nav:nth-child(1) {
 
 .mainForm {
     position: absolute;
-    width: 25%;
+    width: 30%;
     height: 100%;
-    top: 50%;
+    top: 30%;
     left: 50%;
     transform: translate(-50%);
     font-size: 1.2em;
@@ -227,14 +239,14 @@ nav:nth-child(1) {
 
 .signIn {
     position: absolute;
-    top: 15%;
+    top: 25%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
 
 .signUp {
     position: absolute;
-    top: 30%;
+    top: 40%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
@@ -252,30 +264,54 @@ nav:nth-child(1) {
 }
 
 #loginErrorParagraph {
+    margin-top: 100px;
+    margin-left: 50px;
+    position: relative;
     width: inherit;
+    width: 400px
 }
 
 #loginError {
-    position: absolute;
     display: none;
     color: #555;
     border-radius: 5px;
     font-family: Tahoma, Geneva, Arial, sans-serif;
     font-size: .8em;
     padding:5px 5px 5px 30px;
-    margin:-4px 0px 0px 0px;
-    background:#ffecec url('http://www.html5accessibility.com/images/cross.png') no-repeat 10px 50%;
-    border:2px solid #f5aca6;
+    /*background:#ffecec url('http://www.html5accessibility.com/images/cross.png') no-repeat 10px 50%;*/
+    /*border:2px solid #f5aca6;*/
+    width: 300px;
+    text-align: center;
+}
+
+#signupErrorParagraph {
+    margin-top: 200px;
+    margin-left: 25px;
+    position: relative;
     width: inherit;
+    width: 400px
+}
+
+#signupError {
+    display: none;
+    color: #555;
+    border-radius: 5px;
+    font-family: Tahoma, Geneva, Arial, sans-serif;
+    font-size: .8em;
+    padding:5px 5px 5px 30px;
+    /*background:#ffecec url('http://www.html5accessibility.com/images/cross.png') no-repeat 10px 50%;*/
+    /*border:2px solid #f5aca6;*/
+    width: 300px;
     text-align: center;
 }
 
 #entryErrorParagraph {
-    width: inherit;
+    position:inherit;
+    width: max-content;
+    float:right;
 }
 
 #entryError {
-    position: absolute;
     display: none;
     color: #555;
     border-radius: 5px;
@@ -283,8 +319,30 @@ nav:nth-child(1) {
     font-size: .8em;
     padding:5px 5px 5px 30px;
     margin:-4px 0px 0px 0px;
-    background:#ffecec url('http://www.html5accessibility.com/images/cross.png') no-repeat 10px 50%;
-    border:2px solid #f5aca6;
+    /*background:#ffecec url('http://www.html5accessibility.com/images/cross.png') no-repeat 10px 50%;*/
+    /*border:2px solid #f5aca6;*/
+    width: inherit;
+    text-align: center;
+}
+
+#passwordErrorParagraph {
+    position: absolute;
+    width: max-content;
+    top: 105%;
+    left: 50%;
+    transform: translate(-50%, -100%);
+}
+
+#passwordError {
+    display: none;
+    color: #555;
+    border-radius: 5px;
+    font-family: Tahoma, Geneva, Arial, sans-serif;
+    font-size: .8em;
+    padding:5px 5px 5px 30px;
+    margin:-4px 0px 0px 0px;
+    /*background:#ffecec url('http://www.html5accessibility.com/images/cross.png') no-repeat 10px 50%;*/
+    /*border:2px solid #f5aca6;*/
     width: inherit;
     text-align: center;
 }
@@ -345,7 +403,7 @@ img.Entry {
 
 #entries {
     text-align: center;
-    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    /*font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;*/
     border-collapse: collapse;
     border: 3px solid #ddd;
     width: 100%;
@@ -384,4 +442,27 @@ img.Entry {
     margin: 0;
     padding: 0;
     width: 100%;
+}
+
+#profileSection {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -100%);
+    border-bottom: solid black 1px;
+}
+
+#passwordSection {
+    position:absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    border-top: solid black 1px;
+}
+
+.passwordFormElement {
+    position: relative;
+    float: left;
+    clear: both;
+    margin: 5px;
 }

@@ -1,16 +1,14 @@
 const handleLogin = (e) => {
   e.preventDefault();
 
-  $("#errorMessage").animate({width: 'hide'}, 350);
-
   if ($("#user").val() === '' && $("#pass").val() === '') {
-    handleLoginError("Username and password is empty");
+    handleMessage("loginError", "Username and password is empty");
     return false;
   } else if ($("#user").val() === '') {
-    handleLoginError("Username is empty");
+    handleMessage("loginError", "Username is empty");
     return false;
   } else if ($("#pass").val() === '') {
-    handleLoginError("Password is empty");
+    handleMessage("loginError", "Password is empty");
     return false;
   }
 
@@ -24,15 +22,13 @@ const handleLogin = (e) => {
 const handleSignup = (e) => {
   e.preventDefault();
 
-  $("#errorMessage").animate({width: 'hide'}, 350);
-
   if ($("#user").val() === '' || $("#pass").val() === '' || $("#pass2").val() === '') {
-    handleError("All fields are required");
+    handleMessage("signupError", "All fields are required");
     return false;
   }
 
   if ($("#pass").val() !== $("#pass2").val()) {
-    handleError("Passwords do not match");
+    handleMessage("signupError", "Passwords do not match");
     return false;
   }
 
@@ -55,7 +51,7 @@ const LoginWindow = (props) => {
       <input class="passInputLogin" id="pass" type="password" name="pass" placeholder="password"/>
       <input type="hidden" name="_csrf" value={props.csrf}/>
       <input className="formSubmit signIn" type="submit" value="Sign in"/>
-      <p id="loginErrorParagraph"><span id="loginError"></span></p>
+      <p class="errorParagraph" id="loginErrorParagraph"><span id="loginError"></span></p>
     </form>
   );
 };
@@ -81,6 +77,7 @@ const SignupWindow = (props) => {
       <input class="password2InputReg" id="pass2" type="password" name="pass2" placeholder="retype password"/>
       <input type="hidden" name="_csrf" value={props.csrf}/>
       <input className="formSubmit signUp" type="submit" value="Sign Up"/>
+      <p class="errorParagraph" id="signupErrorParagraph"><span id="signupError"></span></p>
     </form>
   );
 };

@@ -13,6 +13,8 @@ const router = (app) => {
   app.get('/profile', mid.requiresLogin, controllers.Profile.profilePage);
   app.get('/getProfile', mid.requiresLogin, controllers.Profile.getProfile);
   app.get('/isSubscribed', mid.requiresLogin, controllers.Profile.isSubscribed);
+  app.post('/isValidPwd', mid.requiresLogin, controllers.Profile.isValidPwd);
+  app.post('/updatePwd', mid.requiresLogin, controllers.Profile.updatePwd);
   app.post('/addEntry', mid.requiresLogin, controllers.Entry.makeEntry);
   app.post('/removeEntry', mid.requiresLogin, controllers.Entry.removeEntry);
   app.get('/', mid.requiresSecure, mid.requiresLogout, controllers.Profile.loginPage);

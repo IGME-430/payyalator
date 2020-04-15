@@ -10,22 +10,24 @@ var handleEntry = function handleEntry(e) {
   e.preventDefault();
 
   if ($("#entryYear").val() === '' || $("#entryMonth").val() === '' || $("#entryCategory").val() === '' || $("#entryItem").val() === '' || $("#entryAmount").val() === 0.00) {
-    handleEntryError("All fields are required");
+    handleMessage("entryError", "All fields are required");
     return false;
   }
 
   if ($("#entryCategory").val().indexOf(' ') > 0 || $("#entryItem").val().indexOf(' ') > 0) {
-    handleEntryError("No spaces allowed in names.");
+    handleMessage("entryError", "No spaces allowed in names.");
     return false;
   }
 
-  if (parseInt($("#nrOfEntries").val()) >= 10 && $("#subscribed").val() === "false") {
-    handleEntryError("You have reached your entry limit.  Subscribe in" + " the profile page to add more than 10 entries");
+  if (parseInt($("#nrOfEntries").val()) >= 5 && $("#subscribed").val() === "false") {
+    handleMessage("entryError", "You have reached your entry limit.  Subscribe in" + " the profile page to add more than 5 entries");
     return false;
   }
 
   sendAjax('POST', $("#entryForm").attr("action"), $("#entryForm").serialize(), function () {
     getToken();
+    $("#entryItem").val(null);
+    $("#entryAmount").val(null);
   });
   return false;
 };
@@ -54,7 +56,7 @@ var EntryForm = function EntryForm(props) {
     name: "entryForm",
     action: "/addEntry",
     method: "POST",
-    className: "entryForm"
+    "class": "entryForm"
   }, /*#__PURE__*/React.createElement("label", {
     "class": "entryFormElement",
     htmlFor: "year"
@@ -157,10 +159,11 @@ var EntryForm = function EntryForm(props) {
     name: "subscribed",
     value: ""
   }), /*#__PURE__*/React.createElement("input", {
-    className: "entrySubmit entryFormElement",
+    "class": "entrySubmit entryFormElement",
     type: "submit",
     value: "Submit Entry"
   }), /*#__PURE__*/React.createElement("p", {
+    "class": "errorParagraph",
     id: "entryErrorParagraph"
   }, /*#__PURE__*/React.createElement("span", {
     id: "entryError"
@@ -170,9 +173,9 @@ var EntryForm = function EntryForm(props) {
 var EntryList = function EntryList(props) {
   if (props.entries.length === 0) {
     return /*#__PURE__*/React.createElement("div", {
-      className: "entryList"
+      "class": "entryList"
     }, /*#__PURE__*/React.createElement("h3", {
-      className: "emptyEntry"
+      "class": "emptyEntry"
     }, "No Entries yet"));
   }
 
@@ -192,9 +195,9 @@ var EntryList = function EntryList(props) {
       value: props.csrf
     }), /*#__PURE__*/React.createElement("input", {
       id: "trashButton",
-      className: "removeEntrySubmit",
+      "class": "removeEntrySubmit",
       type: "image",
-      src: "/assets/img/trash.png",
+      src: "/assets/img/trash_small.png",
       alt: "Submit"
     }));
   }); // Build the header
@@ -229,9 +232,9 @@ var EntryList = function EntryList(props) {
 var SummaryList = function SummaryList(props) {
   if (props.entries.length === 0) {
     return /*#__PURE__*/React.createElement("div", {
-      className: "summaryList"
+      "class": "summaryList"
     }, /*#__PURE__*/React.createElement("h3", {
-      className: "emptyEntry"
+      "class": "emptyEntry"
     }, "No Entries yet"));
   }
 
@@ -352,17 +355,57 @@ $(document).ready(function () {
 });
 "use strict";
 
-var handleLoginError = function handleLoginError(message) {
-  $("#loginError").attr("style", "display: inline;");
-  $("#loginError").attr("aria-invalid", "true");
-  $("#loginError").html("&nbsp; <b>ERROR</b> - " + message);
-  $("#user").attr("aria-invalid", "true");
+var updateAttributes = function updateAttributes(component, message, messageType) {
+  if (messageType === "error") {
+    component.attr("style", "display: inline;");
+    component.attr("aria-invalid", "true");
+    component.css("background", "#FFECEC url('/assets/img/cross_small.png') no-repeat 15px 50%");
+    component.css("background-size", "15px");
+    component.css("border", "2px solid #F5ACA6");
+    component.html("&nbsp; <b>ERROR</b> - " + message);
+  } else if (messageType === "informative") {
+    component.attr("style", "display: inline;");
+    component.attr("aria-invalid", "true");
+    component.css("background", "#9FF4A1 url('/assets/img/checkmark_small.png') no-repeat 10px 50%");
+    component.css("background-size", "15px");
+    component.css("border", "2px solid #108E00");
+    component.html("&nbsp; <b>SUCCESS</b> - " + message);
+  }
 };
 
-var handleEntryError = function handleEntryError(message) {
-  $("#entryError").attr("style", "display: inline;");
-  $("#entryError").attr("aria-invalid", "true");
-  $("#entryError").html("&nbsp; <b>ERROR</b> - " + message);
+var handleMessage = function handleMessage(messageType, message) {
+  var component;
+
+  switch (messageType) {
+    case "loginError":
+      component = $("#loginError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "signupError":
+      component = $("#signupError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "entryError":
+      component = $("#entryError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "passwordError":
+      component = $("#passwordError");
+      updateAttributes(component, message, "error");
+      break;
+
+    case "passwordUpdated":
+      component = $("#passwordError");
+      updateAttributes(component, message, "informative");
+      break;
+
+    default:
+      console.log("An unknown error occurred");
+  }
+
   $("#user").attr("aria-invalid", "true");
 };
 
@@ -386,7 +429,7 @@ var sendAjax = function sendAjax(type, action, data, success) {
 
       switch (_error) {
         case "Unauthorized":
-          handleLoginError(messageObj.error);
+          handleMessage("loginError", messageObj.error);
 
         default:
           console.log(messageObj.error);

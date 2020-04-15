@@ -10,7 +10,7 @@ const budgetPage = (req, res) => {
       return res.status(400).json({ error: 'An error occurred' });
     }
 
-    return res.render('main', { csrfToken: req.csrfToken()});
+    return res.render('main', { csrfToken: req.csrfToken() });
   });
 };
 

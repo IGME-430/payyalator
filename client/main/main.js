@@ -6,27 +6,29 @@ const handleEntry = (e) => {
     $("#entryCategory").val() === '' ||
     $("#entryItem").val() === '' ||
     $("#entryAmount").val() === 0.00) {
-    handleEntryError("All fields are required");
+    handleMessage("entryError", "All fields are required");
 
     return false;
   }
 
   if ($("#entryCategory").val().indexOf(' ') > 0 ||
     $("#entryItem").val().indexOf(' ') > 0) {
-    handleEntryError("No spaces allowed in names.");
+    handleMessage("entryError", "No spaces allowed in names.");
 
     return false;
   }
 
-  if (parseInt($("#nrOfEntries").val()) >= 10 && $("#subscribed").val() === "false") {
-    handleEntryError("You have reached your entry limit.  Subscribe in" +
-      " the profile page to add more than 10 entries");
+  if (parseInt($("#nrOfEntries").val()) >= 5 && $("#subscribed").val() === "false") {
+    handleMessage("entryError", "You have reached your entry limit.  Subscribe in" +
+      " the profile page to add more than 5 entries");
 
     return false;
   }
 
   sendAjax('POST', $("#entryForm").attr("action"), $("#entryForm").serialize(), function () {
     getToken();
+    $("#entryItem").val(null);
+    $("#entryAmount").val(null);
   });
 
   return false;
@@ -64,7 +66,7 @@ const EntryForm = (props) => {
           name="entryForm"
           action="/addEntry"
           method="POST"
-          className="entryForm"
+          class="entryForm"
     >
       <label class="entryFormElement" htmlFor="year">Year: </label>
       <select class="entryFormElement" id="entryYear" name="year">
@@ -107,8 +109,8 @@ const EntryForm = (props) => {
       <input type="hidden" name="_csrf" value={props.csrf}/>
       <input id="nrOfEntries" type="hidden" name="nrOfEntries" value=""/>
       <input id="subscribed" type="hidden" name="subscribed" value=""/>
-      <input className="entrySubmit entryFormElement" type="submit" value="Submit Entry"/>
-      <p id="entryErrorParagraph"><span id="entryError"></span></p>
+      <input class="entrySubmit entryFormElement" type="submit" value="Submit Entry"/>
+      <p class="errorParagraph" id="entryErrorParagraph"><span id="entryError"></span></p>
     </form>
   );
 };
@@ -116,8 +118,8 @@ const EntryForm = (props) => {
 const EntryList = function (props) {
   if (props.entries.length === 0) {
     return (
-      <div className="entryList">
-        <h3 className="emptyEntry">No Entries yet</h3>
+      <div class="entryList">
+        <h3 class="emptyEntry">No Entries yet</h3>
       </div>
     );
   }
@@ -135,7 +137,7 @@ const EntryList = function (props) {
         <td>{item}</td>
         <td>{amount}</td>
         <input type='hidden' name='_csrf' value={props.csrf}/>
-        <input id='trashButton' className='removeEntrySubmit' type='image' src='/assets/img/trash.png'
+        <input id='trashButton' class='removeEntrySubmit' type='image' src='/assets/img/trash_small.png'
                alt="Submit"/>
       </tr>
     );
@@ -179,8 +181,8 @@ const EntryList = function (props) {
 const SummaryList = function (props) {
   if (props.entries.length === 0) {
     return (
-      <div className="summaryList">
-        <h3 className="emptyEntry">No Entries yet</h3>
+      <div class="summaryList">
+        <h3 class="emptyEntry">No Entries yet</h3>
       </div>
     );
   }

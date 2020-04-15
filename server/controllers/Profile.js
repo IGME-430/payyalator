@@ -124,6 +124,31 @@ const isSubscribed = (request, response) => {
   });
 };
 
+const isValidPwd = (request, response) => {
+  const req = request;
+  const res = response;
+
+  return Profile.ProfileModel.findByOwner(req.session.profile._id, (err, docs) => {
+    if (err) {
+      console.log(err);
+
+      return res.status(400).json({ error: 'An error occurred' });
+    }
+
+    return Profile.ProfileModel.authenticate(
+      docs[0].username,
+      req.body.password,
+      (err1, profile) => {
+        if (err1 || !profile) {
+          return res.json({ isValid: false });
+        }
+
+        return res.json({ isValid: true });
+      },
+    );
+  });
+};
+
 const updateSubscription = (request, response) => {
   const req = request;
   const res = response;
@@ -140,6 +165,32 @@ const updateSubscription = (request, response) => {
     }
 
     return res.json({ profile: docs });
+  });
+};
+
+const updatePwd = (request, response) => {
+  const req = request;
+  const res = response;
+
+  Profile.ProfileModel.generateHash(req.body.newPassword, (salt, hash) => {
+    const updateData = {
+      _id: req.session.profile._id,
+      username: req.session.profile.username,
+      subscribed: req.session.profile.subscribed,
+      password: hash,
+      salt,
+    };
+
+    return Profile.ProfileModel.updatePassword(updateData, (err, docs) => {
+      if (err) {
+        console.log(err);
+        return res.status(400).json({ error: 'An error occurred' });
+      }
+
+      req.session.profile = Profile.ProfileModel.toAPI(updateData);
+
+      return res.json({ profile: docs });
+    });
   });
 };
 
@@ -163,3 +214,5 @@ module.exports.signup = signup;
 module.exports.updateSubscription = updateSubscription;
 module.exports.getToken = getToken;
 module.exports.isSubscribed = isSubscribed;
+module.exports.isValidPwd = isValidPwd;
+module.exports.updatePwd = updatePwd;
