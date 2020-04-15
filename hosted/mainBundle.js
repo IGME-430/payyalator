@@ -430,6 +430,11 @@ var sendAjax = function sendAjax(type, action, data, success) {
       switch (_error) {
         case "Unauthorized":
           handleMessage("loginError", messageObj.error);
+          break;
+
+        case "Bad Request":
+          handleMessage("signupError", messageObj.error);
+          break;
 
         default:
           console.log(messageObj.error);
