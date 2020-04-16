@@ -25,7 +25,7 @@ const handleSignup = (e) => {
   e.preventDefault();
 
   // Ensure all the required fields are provided to register the user
-  if ($("#first").val() === '' ||
+  if ($("#firstn").val() === '' ||
       $("#lastn").val() === '' ||
       $("#user").val() === '' ||
       $("#pass").val() === '' ||
