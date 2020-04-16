@@ -1,30 +1,33 @@
+// Handle the submission of a new entry
 const handleEntry = (e) => {
   e.preventDefault();
 
+  // Confirm that all the required fields are supplied
   if ($("#entryYear").val() === '' ||
     $("#entryMonth").val() === '' ||
     $("#entryCategory").val() === '' ||
     $("#entryItem").val() === '' ||
     $("#entryAmount").val() === 0.00) {
     handleMessage("entryError", "All fields are required");
-
     return false;
   }
 
+  // Ensure there is no entry at the beginning of a category or item
   if ($("#entryCategory").val().indexOf(' ') > 0 ||
     $("#entryItem").val().indexOf(' ') > 0) {
     handleMessage("entryError", "No spaces allowed in names.");
-
     return false;
   }
 
+  // Determine how many entries the user has.  If the user has 5 entries, inform them
+  // if they are not a subscriber that they need to subscribe in order to add more entries
   if (parseInt($("#nrOfEntries").val()) >= 5 && $("#subscribed").val() === "false") {
     handleMessage("entryError", "You have reached your entry limit.  Subscribe in" +
       " the profile page to add more than 5 entries");
-
     return false;
   }
 
+  // Send the entry submission to the server
   sendAjax('POST', $("#entryForm").attr("action"), $("#entryForm").serialize(), function () {
     getToken();
     $("#entryItem").val(null);
@@ -34,6 +37,7 @@ const handleEntry = (e) => {
   return false;
 };
 
+// Remove an entry from the entries list
 const removeEntry = (e) => {
   e.preventDefault();
 
@@ -59,6 +63,7 @@ const removeEntry = (e) => {
   return false;
 };
 
+// Build the React data entry template
 const EntryForm = (props) => {
   return (
     <form id="entryForm"
@@ -115,7 +120,9 @@ const EntryForm = (props) => {
   );
 };
 
+// Build the react detailed table of entries
 const EntryList = function (props) {
+  // If there are not entries, indicate such
   if (props.entries.length === 0) {
     return (
       <div class="entryList">
@@ -178,6 +185,7 @@ const EntryList = function (props) {
   );
 }
 
+// Build the react summary table of entries
 const SummaryList = function (props) {
   if (props.entries.length === 0) {
     return (
@@ -236,6 +244,7 @@ const SummaryList = function (props) {
   );
 }
 
+// Add the click even listener to the deletion button
 const attachButton = () => {
   const trashButtons = document.querySelectorAll("#trashButton");
 
@@ -248,10 +257,12 @@ const attachButton = () => {
   }
 };
 
+// Get the entry data for all entries made by the user from MongoDB
 const loadEntriesFromServer = (csrf) => {
   sendAjax('GET', '/getEntries', null, (data) => {
     let entries = data.entries;
 
+    // Render and populate the list of entries
     ReactDOM.render(
       <EntryList csrf={csrf} entries={entries}/>, document.querySelector("#breakdownContainer"),
       () => {
@@ -259,32 +270,40 @@ const loadEntriesFromServer = (csrf) => {
       }
     );
 
+    // Render and populate the summary
     ReactDOM.render(
       <SummaryList entries={entries}/>, document.querySelector("#summaryContainer")
     );
   });
 
+  // Determine if the user is a subscriber, and update the subscribed checkbox state
   sendAjax('GET', '/isSubscribed', null, (result) => {
     document.querySelector("#subscribed").value = result.subscribed[0].subscribed;
   });
 };
 
+// Render the components on the screen
 const setup = function (csrf) {
+  // Render the form used to make new entries
   ReactDOM.render(
     <EntryForm csrf={csrf}/>, document.querySelector("#addEntryContainer")
   );
 
+  // Render the table displaying a list of all entries
   ReactDOM.render(
     <EntryList entries={[]}/>, document.querySelector("#breakdownContainer")
   );
 
+  // Render the table displaying a summary of all entries
   ReactDOM.render(
     <SummaryList entries={[]}/>, document.querySelector("#summaryContainer")
   );
 
+  // Populate the tables
   loadEntriesFromServer(csrf);
 };
 
+// Request a session token and setup the window
 const getToken = () => {
   sendAjax('GET', '/getToken', null, (result) => {
     setup(result.csrfToken);

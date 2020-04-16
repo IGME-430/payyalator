@@ -9,6 +9,7 @@ const iterations = 10000;
 const saltLength = 64;
 const keyLength = 64;
 
+// User profile model
 const ProfileSchema = new mongoose.Schema(
   {
     firstname: {
@@ -60,6 +61,7 @@ ProfileSchema.statics.toAPI = (doc) => ({
   _id: doc._id,
 });
 
+// Validate the user provided password
 const validatePassword = (doc, password, callback) => {
   const pass = doc.password;
 
@@ -71,6 +73,7 @@ const validatePassword = (doc, password, callback) => {
   });
 };
 
+// Search for a user by providing the username
 ProfileSchema.statics.findByUsername = (name, callback) => {
   const search = {
     username: name,
@@ -79,6 +82,7 @@ ProfileSchema.statics.findByUsername = (name, callback) => {
   return ProfileModel.findOne(search, callback);
 };
 
+// Search for an entry based on the id of the owner who created it
 ProfileSchema.statics.findByOwner = (ownerId, callback) => {
   const search = {
     _id: convertId(ownerId),
@@ -87,6 +91,7 @@ ProfileSchema.statics.findByOwner = (ownerId, callback) => {
   return ProfileModel.find(search).select('firstname lastname username subscribed').exec(callback);
 };
 
+// Get the "subscribed" bool property value of the user
 ProfileSchema.statics.isSubscribed = (ownerId, callback) => {
   const search = {
     _id: convertId(ownerId),
@@ -95,12 +100,14 @@ ProfileSchema.statics.isSubscribed = (ownerId, callback) => {
   return ProfileModel.find(search).select('subscribed').exec(callback);
 };
 
+// Generate a hash (encrypted password and salt) for the provided password
 ProfileSchema.statics.generateHash = (password, callback) => {
   const salt = crypto.randomBytes(saltLength);
 
   crypto.pbkdf2(password, salt, iterations, keyLength, 'RSA-SHA512', (err, hash) => callback(salt, hash.toString('hex')));
 };
 
+// Authenticate the user
 ProfileSchema.statics.authenticate = (username, password, callback) => {
   ProfileModel.findByUsername(username, (err, doc) => {
     if (err) {
@@ -121,6 +128,7 @@ ProfileSchema.statics.authenticate = (username, password, callback) => {
   });
 };
 
+// Update the subscription of the user.  Set it to true if it is false, and vica verca
 ProfileSchema.statics.updateSubscription = (doc, callback) => {
   const filterId = { _id: convertId(doc.owner) };
   const update = { subscribed: (doc.subscription === 'true') };
@@ -133,6 +141,7 @@ ProfileSchema.statics.updateSubscription = (doc, callback) => {
   );
 };
 
+// Update the user password
 ProfileSchema.statics.updatePassword = (doc, callback) => {
   const filterId = { _id: convertId(doc._id) };
   const update = {

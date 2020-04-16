@@ -2,15 +2,18 @@ const models = require('../models');
 
 const { Profile } = models;
 
+// The profile page controller... get a csrf token
 const loginPage = (req, res) => {
   res.render('login', { csrfToken: req.csrfToken() });
 };
 
+// Logout and destroy the session
 const logout = (req, res) => {
   req.session.destroy();
   res.redirect('/');
 };
 
+// Make a login request
 const login = (request, response) => {
   const req = request;
   const res = response;
@@ -19,6 +22,7 @@ const login = (request, response) => {
   const username = `${req.body.username}`;
   const password = `${req.body.pass}`;
 
+  // Ensure both the username and password are provided before accessing mongo
   if (!username || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
@@ -30,10 +34,12 @@ const login = (request, response) => {
 
     req.session.profile = Profile.ProfileModel.toAPI(profile);
 
+    // Redirect to /main once the query completes successfully
     return res.json({ redirect: '/main' });
   });
 };
 
+// Perform a signup request
 const signup = (request, response) => {
   const req = request;
   const res = response;
@@ -45,14 +51,17 @@ const signup = (request, response) => {
   req.body.pass = `${req.body.pass}`;
   req.body.pass2 = `${req.body.pass2}`;
 
+  // Ensure the username, password and confirm password fields are populated
   if (!req.body.username || !req.body.pass || !req.body.pass2) {
     return res.status(400).json({ error: 'All fields are required' });
   }
 
+  // Ensure the passwords match
   if (req.body.pass !== req.body.pass2) {
     return res.status(400).json({ error: 'Passwords do not match' });
   }
 
+  // Generate a hash (encrypted password) and salt
   return Profile.ProfileModel.generateHash(req.body.pass, (salt, hash) => {
     const profileData = {
       firstname: req.body.firstname,
@@ -62,15 +71,18 @@ const signup = (request, response) => {
       password: hash,
     };
 
+    // Add a new profile entry
     const newProfile = new Profile.ProfileModel(profileData);
 
     const savePromise = newProfile.save();
 
+    // Once the promise has been met, redirect to /main
     savePromise.then(() => {
       req.session.profile = Profile.ProfileModel.toAPI(newProfile);
       res.json({ redirect: '/main' });
     });
 
+    // Save the newly created data
     savePromise.catch((err) => {
       console.log(err);
 
@@ -83,6 +95,7 @@ const signup = (request, response) => {
   });
 };
 
+// Load the profile page
 const profilePage = (req, res) => {
   Profile.ProfileModel.findByOwner(req.session.profile._id, (err, docs) => {
     if (err) {
@@ -95,10 +108,12 @@ const profilePage = (req, res) => {
   });
 };
 
+// Find a user profile and send it to the client
 const getProfile = (request, response) => {
   const req = request;
   const res = response;
 
+  // Find a profile based on user id
   return Profile.ProfileModel.findByOwner(req.session.profile._id, (err, docs) => {
     if (err) {
       console.log(err);
@@ -109,10 +124,12 @@ const getProfile = (request, response) => {
   });
 };
 
+// Determine if the user is a subscriber
 const isSubscribed = (request, response) => {
   const req = request;
   const res = response;
 
+  // Find a profile based on user id
   return Profile.ProfileModel.findByOwner(req.session.profile._id, (err, docs) => {
     if (err) {
       console.log(err);
@@ -124,10 +141,12 @@ const isSubscribed = (request, response) => {
   });
 };
 
+// Determine if the supplied password is valid
 const isValidPwd = (request, response) => {
   const req = request;
   const res = response;
 
+  // Find a profile based on user id
   return Profile.ProfileModel.findByOwner(req.session.profile._id, (err, docs) => {
     if (err) {
       console.log(err);
@@ -135,6 +154,7 @@ const isValidPwd = (request, response) => {
       return res.status(400).json({ error: 'An error occurred' });
     }
 
+    // Authenticate the user
     return Profile.ProfileModel.authenticate(
       docs[0].username,
       req.body.password,
@@ -149,6 +169,7 @@ const isValidPwd = (request, response) => {
   });
 };
 
+// Update the user subscription
 const updateSubscription = (request, response) => {
   const req = request;
   const res = response;
@@ -158,6 +179,7 @@ const updateSubscription = (request, response) => {
     subscription: req.body.subscribed,
   };
 
+  // Update the subscription status
   return Profile.ProfileModel.updateSubscription(updateData, (err, docs) => {
     if (err) {
       console.log(err);
@@ -168,10 +190,12 @@ const updateSubscription = (request, response) => {
   });
 };
 
+// Update the user password
 const updatePwd = (request, response) => {
   const req = request;
   const res = response;
 
+  // Get a new hash and salt for the new password
   Profile.ProfileModel.generateHash(req.body.newPassword, (salt, hash) => {
     const updateData = {
       _id: req.session.profile._id,
@@ -181,6 +205,7 @@ const updatePwd = (request, response) => {
       salt,
     };
 
+    // Update the password
     return Profile.ProfileModel.updatePassword(updateData, (err, docs) => {
       if (err) {
         console.log(err);
@@ -194,6 +219,7 @@ const updatePwd = (request, response) => {
   });
 };
 
+// Get a token
 const getToken = (request, response) => {
   const req = request;
   const res = response;

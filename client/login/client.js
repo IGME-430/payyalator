@@ -1,6 +1,8 @@
+// Process the login request
 const handleLogin = (e) => {
   e.preventDefault();
 
+  // Ensure the username and password fields ar enot empty
   if ($("#user").val() === '' && $("#pass").val() === '') {
     handleMessage("loginError", "Username and password is empty");
     return false;
@@ -12,31 +14,39 @@ const handleLogin = (e) => {
     return false;
   }
 
-  console.log($("input[name=_csrf]").val());
-
+  // Send the login request to the server
   sendAjax('POST', $("#loginForm").attr("action"), $("#loginForm").serialize(), redirect);
 
   return false;
 };
 
+// Process the sign up request
 const handleSignup = (e) => {
   e.preventDefault();
 
-  if ($("#user").val() === '' || $("#pass").val() === '' || $("#pass2").val() === '') {
+  // Ensure all the required fields are provided to register the user
+  if ($("#first").val() === '' ||
+      $("#lastn").val() === '' ||
+      $("#user").val() === '' ||
+      $("#pass").val() === '' ||
+      $("#pass2").val() === '') {
     handleMessage("signupError", "All fields are required");
     return false;
   }
 
+  // Ensure the password and confirm password fields have the same value
   if ($("#pass").val() !== $("#pass2").val()) {
     handleMessage("signupError", "Passwords do not match");
     return false;
   }
 
+  // Send the signup request to the server
   sendAjax('POST', $("#signupForm").attr("action"), $("#signupForm").serialize(), redirect);
 
   return false;
 };
 
+// Build the React login window template
 const LoginWindow = (props) => {
   return (
     <form id="loginForm" name="loginForm"
@@ -56,6 +66,7 @@ const LoginWindow = (props) => {
   );
 };
 
+// Build the React signup window template
 const SignupWindow = (props) => {
   return (
     <form id="signupForm"
@@ -82,6 +93,7 @@ const SignupWindow = (props) => {
   );
 };
 
+// Render the login window
 const createLoginWindow = (csrf) => {
   ReactDOM.render(
     <LoginWindow csrf={csrf}/>,
@@ -89,6 +101,7 @@ const createLoginWindow = (csrf) => {
   );
 };
 
+// Render the signup window
 const createSignupWindow = (csrf) => {
   ReactDOM.render(
     <SignupWindow csrf={csrf}/>,
@@ -96,16 +109,19 @@ const createSignupWindow = (csrf) => {
   );
 };
 
+// Add the event listeners to the login and signup buttons
 const setup = (csrf) => {
   const loginButton = document.querySelector("#loginButton");
   const signupButton = document.querySelector("#signupButton");
 
+  // Add the click even listener to the signup button
   signupButton.addEventListener("click", (e) => {
     e.preventDefault();
     createSignupWindow(csrf);
     return false;
   });
 
+  // Add the click even listener to the login button
   loginButton.addEventListener("click", (e) => {
     e.preventDefault();
     createLoginWindow(csrf);
@@ -115,6 +131,7 @@ const setup = (csrf) => {
   createLoginWindow(csrf); // default view
 };
 
+// Request a session token and setup the window
 const getToken = () => {
   sendAjax('GET', '/getToken', null, (result) => {
     setup(result.csrfToken);

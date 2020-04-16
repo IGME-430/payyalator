@@ -1,36 +1,10 @@
-const updateProfile = (e) => {
-  e.preventDefault();
-
-  if ($("#entryDate").val() === '' ||
-    $("#entryCategory").val() === '' ||
-    $("#entryItem").val() === '' ||
-    $("#entryAmount").val() === 0.00) {
-    handleMessage("passwordError", "All fields are required");
-
-    return false;
-  }
-
-  if (
-    $("#entryCategory").val().indexOf(' ') > 0 ||
-    $("#entryItem").val().indexOf(' ') > 0) {
-    handleMessage("passwordError", "No spaces allowed in names.");
-
-    return false;
-  }
-
-  sendAjax('POST', $("#entryForm").attr("action"), $("#entryForm").serialize(), function () {
-    getToken();
-  });
-
-  return false;
-};
-
+// Change the user password
 const changePassword = (e) => {
   e.preventDefault();
 
+  // Ensure the old, new and confirm password fields are populated
   if ($(".oldPasswordInput").val() === '') {
     handleMessage("passwordError", "You did not provide your old password");
-
     return false;
   } else if ($(".newPasswordInput").val() === '') {
     handleMessage("passwordError", "You did not provide a new password");
@@ -40,6 +14,7 @@ const changePassword = (e) => {
     return false;
   }
 
+  // Make sure the new and confirm password is the same
   if ($(".newPasswordInput").val() !== $(".confirmPasswordInput").val()) {
     handleMessage("passwordError", "Your new passwords do not match");
     return false;
@@ -48,12 +23,14 @@ const changePassword = (e) => {
   let passwordData = `password=${$(".oldPasswordInput").val()}&`;
   passwordData += `_csrf=${$("#_csrf").val()}`;
 
+  // Make sure the old password is correct to ensure someone isn't stealing the account
   sendAjax('POST', '/isValidPwd', passwordData, (password) => {
     if (!password.isValid) {
       handleMessage("passwordError", "Your Old Password does not match the password on file, please try again");
       return false;
     }
 
+    // If the user knows their old password, request the change to the new password
     sendAjax('GET', '/getToken', null, (result) => {
       let updateData =`newPassword=${$(".newPasswordInput").val()}&`;
       updateData += `_csrf=${result.csrfToken}`;
@@ -73,6 +50,7 @@ const changePassword = (e) => {
   });
 };
 
+// Update the user subscription status
 const updateSubscription = (e) => {
   e.preventDefault();
 
@@ -91,20 +69,19 @@ const updateSubscription = (e) => {
   return false;
 }
 
+// Build the react user profile form
 const ProfileForm = function (props) {
+  // If there is no profile information, indicate such
   if (props.profile.length === 0) {
     return <div class="editProfile">
       <h3 class="emptyProfile">No Profile Information</h3>
     </div>
   }
 
+  // If there is profile data available, render it
   const profile = props.profile.map(function (profile) {
     return (
       <form id="userProfile"
-            onSubmit={updateProfile}
-            action="/updateProfile"
-            mothod="POST"
-
       >
         <h3 class="username" disabled="true">Username: {profile.username}</h3>
         <h4 class="firstname">Firstname: {profile.firstname}</h4>
@@ -116,6 +93,7 @@ const ProfileForm = function (props) {
     );
   });
 
+  // Return the combined profile data
   return (
     <div class="editProfile">
       {profile}
@@ -123,6 +101,7 @@ const ProfileForm = function (props) {
   );
 };
 
+// Build the react password change fields
 const PasswordForm = function (props) {
   return (
     <form id="changePassword"
@@ -147,6 +126,7 @@ const PasswordForm = function (props) {
   );
 };
 
+// Add the click event listener to the subscription checkbox
 const attachSubscriptionCheck = () => {
   const subCheck = document.querySelector("#subscribed");
 
@@ -157,10 +137,12 @@ const attachSubscriptionCheck = () => {
   });
 };
 
+// Get the user profile data from the server
 const loadProfileFromServer = (csrf) => {
   sendAjax('GET', '/getProfile', null, (data) => {
     let profile = data.profile;
 
+    // Render and populate the user profile information
     ReactDOM.render(
       <ProfileForm csrf={csrf} profile={profile}/>, document.querySelector("#profileSection"),
       () => {
@@ -168,22 +150,28 @@ const loadProfileFromServer = (csrf) => {
       }
     );
 
+    // Update the "subscribed" checkbox on the screen to represent the user subscription status
     document.querySelector("#subscribed").checked = profile[0].subscribed;
   });
 };
 
+// Render the components to the screen
 const setup = function (csrf) {
+  // Render the user profile fields
   ReactDOM.render(
     <ProfileForm csrf={csrf} profile={[]}/>, document.querySelector("#profileSection")
   );
 
+  // Render the change password fields
   ReactDOM.render(
     <PasswordForm csrf={csrf}/>, document.querySelector("#passwordSection")
   );
 
+  // Populate the profile data
   loadProfileFromServer(csrf);
 };
 
+// Request a session token and setup the window
 const getToken = () => {
   sendAjax('GET', '/getToken', null, (result) => {
     setup(result.csrfToken);

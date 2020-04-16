@@ -2,6 +2,7 @@ const models = require('../models');
 
 const { Entry } = models;
 
+// Load the budget page information based on profile id
 const budgetPage = (req, res) => {
   Entry.EntryModel.findByOwner(req.session.profile._id, (err) => {
     if (err) {
@@ -14,10 +15,12 @@ const budgetPage = (req, res) => {
   });
 };
 
+// Get all the entries the user has made from mongo
 const getEntries = (request, response) => {
   const req = request;
   const res = response;
 
+  // Find a profile based on user id
   return Entry.EntryModel.findByOwner(req.session.profile._id, (err, docs) => {
     if (err) {
       console.log(err);
@@ -28,6 +31,7 @@ const getEntries = (request, response) => {
   });
 };
 
+// Remove a specific entry from the database
 const removeEntry = (request, response) => {
   const req = request;
   const res = response;
@@ -41,6 +45,7 @@ const removeEntry = (request, response) => {
     amount: req.body.amount,
   };
 
+  // Remove an entry based on the provided list of criteria
   return Entry.EntryModel.removeEntry(entryData, (err, docs) => {
     if (err) {
       console.log(err);
@@ -51,6 +56,7 @@ const removeEntry = (request, response) => {
   });
 };
 
+// Add an entry to the database
 const makeEntry = (req, res) => {
   if (!req.body.year
       || !req.body.month

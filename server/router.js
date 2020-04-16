@@ -1,6 +1,7 @@
 const controllers = require('./controllers');
 const mid = require('./middleware');
 
+// Route the requests to the correct destination controller
 const router = (app) => {
   app.get('/getToken', mid.requiresSecure, controllers.Profile.getToken);
   app.get('/getEntries', mid.requiresLogin, controllers.Entry.getEntries);

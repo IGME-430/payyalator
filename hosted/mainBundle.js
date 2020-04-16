@@ -6,23 +6,28 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+// Handle the submission of a new entry
 var handleEntry = function handleEntry(e) {
-  e.preventDefault();
+  e.preventDefault(); // Confirm that all the required fields are supplied
 
   if ($("#entryYear").val() === '' || $("#entryMonth").val() === '' || $("#entryCategory").val() === '' || $("#entryItem").val() === '' || $("#entryAmount").val() === 0.00) {
     handleMessage("entryError", "All fields are required");
     return false;
-  }
+  } // Ensure there is no entry at the beginning of a category or item
+
 
   if ($("#entryCategory").val().indexOf(' ') > 0 || $("#entryItem").val().indexOf(' ') > 0) {
     handleMessage("entryError", "No spaces allowed in names.");
     return false;
-  }
+  } // Determine how many entries the user has.  If the user has 5 entries, inform them
+  // if they are not a subscriber that they need to subscribe in order to add more entries
+
 
   if (parseInt($("#nrOfEntries").val()) >= 5 && $("#subscribed").val() === "false") {
     handleMessage("entryError", "You have reached your entry limit.  Subscribe in" + " the profile page to add more than 5 entries");
     return false;
-  }
+  } // Send the entry submission to the server
+
 
   sendAjax('POST', $("#entryForm").attr("action"), $("#entryForm").serialize(), function () {
     getToken();
@@ -30,7 +35,8 @@ var handleEntry = function handleEntry(e) {
     $("#entryAmount").val(null);
   });
   return false;
-};
+}; // Remove an entry from the entries list
+
 
 var removeEntry = function removeEntry(e) {
   e.preventDefault();
@@ -47,7 +53,8 @@ var removeEntry = function removeEntry(e) {
     getToken();
   });
   return false;
-};
+}; // Build the React data entry template
+
 
 var EntryForm = function EntryForm(props) {
   return /*#__PURE__*/React.createElement("form", {
@@ -168,9 +175,11 @@ var EntryForm = function EntryForm(props) {
   }, /*#__PURE__*/React.createElement("span", {
     id: "entryError"
   })));
-};
+}; // Build the react detailed table of entries
+
 
 var EntryList = function EntryList(props) {
+  // If there are not entries, indicate such
   if (props.entries.length === 0) {
     return /*#__PURE__*/React.createElement("div", {
       "class": "entryList"
@@ -227,7 +236,8 @@ var EntryList = function EntryList(props) {
   }, /*#__PURE__*/React.createElement("tr", null, tableHeader), entryNodes, /*#__PURE__*/React.createElement("tr", {
     id: "totalRow"
   }, /*#__PURE__*/React.createElement("td", null), /*#__PURE__*/React.createElement("td", null), /*#__PURE__*/React.createElement("td", null), /*#__PURE__*/React.createElement("td", null, "Total"), /*#__PURE__*/React.createElement("td", null, totalExpenses)))));
-};
+}; // Build the react summary table of entries
+
 
 var SummaryList = function SummaryList(props) {
   if (props.entries.length === 0) {
@@ -289,7 +299,8 @@ var SummaryList = function SummaryList(props) {
   }, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "CATEGORY"), /*#__PURE__*/React.createElement("th", null, "AMOUNT")), entryNodes, /*#__PURE__*/React.createElement("tr", {
     id: "totalRow"
   }, /*#__PURE__*/React.createElement("td", null, "Total"), /*#__PURE__*/React.createElement("td", null, totalExpenses)))));
-};
+}; // Add the click even listener to the deletion button
+
 
 var attachButton = function attachButton() {
   var trashButtons = document.querySelectorAll("#trashButton");
@@ -311,38 +322,48 @@ var attachButton = function attachButton() {
   } finally {
     _iterator2.f();
   }
-};
+}; // Get the entry data for all entries made by the user from MongoDB
+
 
 var loadEntriesFromServer = function loadEntriesFromServer(csrf) {
   sendAjax('GET', '/getEntries', null, function (data) {
-    var entries = data.entries;
+    var entries = data.entries; // Render and populate the list of entries
+
     ReactDOM.render( /*#__PURE__*/React.createElement(EntryList, {
       csrf: csrf,
       entries: entries
     }), document.querySelector("#breakdownContainer"), function () {
       attachButton();
-    });
+    }); // Render and populate the summary
+
     ReactDOM.render( /*#__PURE__*/React.createElement(SummaryList, {
       entries: entries
     }), document.querySelector("#summaryContainer"));
-  });
+  }); // Determine if the user is a subscriber, and update the subscribed checkbox state
+
   sendAjax('GET', '/isSubscribed', null, function (result) {
     document.querySelector("#subscribed").value = result.subscribed[0].subscribed;
   });
-};
+}; // Render the components on the screen
+
 
 var setup = function setup(csrf) {
+  // Render the form used to make new entries
   ReactDOM.render( /*#__PURE__*/React.createElement(EntryForm, {
     csrf: csrf
-  }), document.querySelector("#addEntryContainer"));
+  }), document.querySelector("#addEntryContainer")); // Render the table displaying a list of all entries
+
   ReactDOM.render( /*#__PURE__*/React.createElement(EntryList, {
     entries: []
-  }), document.querySelector("#breakdownContainer"));
+  }), document.querySelector("#breakdownContainer")); // Render the table displaying a summary of all entries
+
   ReactDOM.render( /*#__PURE__*/React.createElement(SummaryList, {
     entries: []
-  }), document.querySelector("#summaryContainer"));
+  }), document.querySelector("#summaryContainer")); // Populate the tables
+
   loadEntriesFromServer(csrf);
-};
+}; // Request a session token and setup the window
+
 
 var getToken = function getToken() {
   sendAjax('GET', '/getToken', null, function (result) {
@@ -355,8 +376,10 @@ $(document).ready(function () {
 });
 "use strict";
 
+// updates the attributes and provides a message to the user based on the message specification
 var updateAttributes = function updateAttributes(component, message, messageType) {
   if (messageType === "error") {
+    // Do this if it is an error message
     component.attr("style", "display: inline;");
     component.attr("aria-invalid", "true");
     component.css("background", "#FFECEC url('/assets/img/cross_small.png') no-repeat 15px 50%");
@@ -364,6 +387,7 @@ var updateAttributes = function updateAttributes(component, message, messageType
     component.css("border", "2px solid #F5ACA6");
     component.html("&nbsp; <b>ERROR</b> - " + message);
   } else if (messageType === "informative") {
+    // Do this if it is an informational message
     component.attr("style", "display: inline;");
     component.attr("aria-invalid", "true");
     component.css("background", "#9FF4A1 url('/assets/img/checkmark_small.png') no-repeat 10px 50%");
@@ -371,7 +395,8 @@ var updateAttributes = function updateAttributes(component, message, messageType
     component.css("border", "2px solid #108E00");
     component.html("&nbsp; <b>SUCCESS</b> - " + message);
   }
-};
+}; // Handle the messages requested based on the message type
+
 
 var handleMessage = function handleMessage(messageType, message) {
   var component;
@@ -414,7 +439,8 @@ var redirect = function redirect(response) {
     width: 'hide'
   }, 350);
   window.location = response.redirect;
-};
+}; // Send an ajax request with the specified properties
+
 
 var sendAjax = function sendAjax(type, action, data, success) {
   $.ajax({

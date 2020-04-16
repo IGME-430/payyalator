@@ -10,6 +10,7 @@ let EntryModel = {};
 const convertId = mongoose.Types.ObjectId;
 const setValue = (val) => _.escape(val).trim();
 
+// Entry model contains all budget entries
 const EntrySchema = new mongoose.Schema({
   year: {
     type: String,
@@ -55,6 +56,7 @@ EntrySchema.statics.toAPI = (doc) => ({
   amount: doc.amount,
 });
 
+// Search for an entry using the specified owner id
 EntrySchema.statics.findByOwner = (ownerId, callback) => {
   const search = {
     owner: convertId(ownerId),
@@ -63,6 +65,7 @@ EntrySchema.statics.findByOwner = (ownerId, callback) => {
   return EntryModel.find(search).select('year month category item amount').exec(callback);
 };
 
+// Remove an entry from the database specified by the list of properties
 EntrySchema.statics.removeEntry = (doc, callback) => {
   const query = {
     owner: convertId(doc.owner),

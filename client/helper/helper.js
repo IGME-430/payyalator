@@ -1,5 +1,6 @@
+// updates the attributes and provides a message to the user based on the message specification
 const updateAttributes = (component, message, messageType) => {
-  if (messageType === "error") {
+  if (messageType === "error") {  // Do this if it is an error message
     component.attr("style", "display: inline;");
     component.attr("aria-invalid", "true");
     component.css("background", "#FFECEC url('/assets/img/cross_small.png') no-repeat 15px 50%");
@@ -7,7 +8,7 @@ const updateAttributes = (component, message, messageType) => {
     component.css("border", "2px solid #F5ACA6");
 
     component.html("&nbsp; <b>ERROR</b> - " + message);
-  } else if (messageType === "informative") {
+  } else if (messageType === "informative") { // Do this if it is an informational message
     component.attr("style", "display: inline;");
     component.attr("aria-invalid", "true");
     component.css("background", "#9FF4A1 url('/assets/img/checkmark_small.png') no-repeat 10px 50%");
@@ -18,8 +19,8 @@ const updateAttributes = (component, message, messageType) => {
   }
 }
 
+// Handle the messages requested based on the message type
 const handleMessage = (messageType, message) => {
-
   let component;
 
   switch (messageType) {
@@ -50,11 +51,13 @@ const handleMessage = (messageType, message) => {
   $("#user").attr("aria-invalid", "true");
 };
 
+
 const redirect = (response) => {
   $("#errorMessage").animate({width: 'hide'}, 350);
   window.location = response.redirect;
 };
 
+// Send an ajax request with the specified properties
 const sendAjax = (type, action, data, success) => {
   $.ajax({
     cache: false,
