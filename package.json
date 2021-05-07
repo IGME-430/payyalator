@@ -41,7 +41,7 @@
     "mongoose": "^5.9.3",
     "redis": "^3.0.2",
     "serve-favicon": "^2.5.0",
-    "underscore": "^1.9.2",
+    "underscore": "^1.12.1",
     "react": "^16.13.1"
   },
   "devDependencies": {
